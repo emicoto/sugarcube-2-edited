@@ -1,0 +1,144 @@
+/***********************************************************************************************************************
+
+	css/init-screen.css
+
+	Copyright © 2013–2021 Thomas Michael Edwards <thomasmedwards@gmail.com>. All rights reserved.
+	Use of this source code is governed by a BSD 2-clause "Simplified" License, which may be found in the LICENSE file.
+
+***********************************************************************************************************************/
+
+@keyframes animateC {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes animateF {
+	0% {
+		color: #423E22;
+	}
+
+	50% {
+		color: #fff000;
+	}
+
+	100% {
+		color: #423E22;
+	}
+}
+
+@keyframes animate {
+	0% {
+		transform: rotate(45deg);
+	}
+
+	100% {
+		transform: rotate(405deg);
+	}
+}
+
+
+#init-screen {
+	display: none;
+	z-index: 500000;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 150px;
+	height: 150px;
+	background: transparent;
+	border: 3px solid #3c3c3c;
+	border-radius: 50%;
+	text-align: center;
+	line-height: 150px;
+	font-family: sans-serif;
+	font-size: 20px;
+	color: #fff000;
+	letter-spacing: 4px;
+	text-transform: uppercase;
+	text-shadow: 0 0 10px #fff000;
+	box-shadow: 0 0 20px rgba(0, 0, 0, .5);
+	animation: animateF 3s linear infinite;
+}
+
+#init-screen::before {
+	content: '';
+	position: absolute;
+	top: -3px;
+	left: -3px;
+	width: 100%;
+	height: 100%;
+	border: 3px solid transparent;
+	border-top: 3px solid #fff000;
+	border-right: 3px solid #fff000;
+	border-radius: 50%;
+	animation: animateC 2s linear infinite;
+}
+
+#init-screen span {
+	display: block;
+	position: absolute;
+	top: calc(50% - 2px);
+	left: 50%;
+	width: 50%;
+	height: 4px;
+	background: transparent;
+	transform-origin: left;
+	animation: animate 2s linear infinite;
+}
+
+#init-screen span::before {
+	content: '';
+	position: absolute;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: #fff000;
+	top: -6px;
+	right: -8px;
+	box-shadow: 0 0 20px #fff000;
+}
+
+#init-screen>div {
+	display: none;
+	position: relative;
+	margin: 0 auto;
+	max-width: 1136px;
+	top: 25%;
+}
+
+html[data-init="no-js"] #init-screen,
+html[data-init="lacking"] #init-screen,
+html[data-init="loading"] #init-screen {
+	display: block;
+}
+
+html[data-init="no-js"] #init-no-js,
+html[data-init="lacking"] #init-lacking {
+	display: block;
+	padding: 0 1em;
+}
+
+html[data-init="no-js"] #init-no-js {
+	color: red;
+}
+
+html[data-init="loading"] #init-loading {
+	display: block;
+}
+
+html[data-init="loading"] #init-loading>div {
+	text-indent: 9999em;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+html[data-init="loading"] #ui-bar,
+html[data-init="loading"] #passages {
+	display: none;
+}
