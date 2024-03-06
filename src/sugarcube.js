@@ -112,8 +112,8 @@ jQuery(() => {
 
 	if (DEBUG) { console.log('[SugarCube/main()] Document loaded; beginning startup.'); }
 
-	console.log("sugarcube.js start up");
-	jQuery(document).trigger("sugarcube:startup");
+	console.log('sugarcube.js start up');
+	jQuery(document).trigger('sugarcube:startup');
 
 	/*
 		WARNING!
@@ -145,7 +145,7 @@ jQuery(() => {
 		Engine.init();
 
 		// before init the script load setting data at first
-		Story.initdata()
+		Story.initdata();
 
 		// Initialize the story (largely load the user styles, scripts, and widgets).
 		Story.init();
@@ -188,8 +188,8 @@ jQuery(() => {
 			}
 
 			// if need wait before finish script initializing
-			if(Config.waitOnLoad == true){
-				return
+			if (Config.waitOnLoad === true) {
+				return;
 			}
 
 			// Clear the recurring timer.

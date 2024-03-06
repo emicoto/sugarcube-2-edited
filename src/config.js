@@ -55,10 +55,10 @@ var Config = (() => { // eslint-disable-line no-unused-vars, no-var
 	let _uiStowBarInitially    = 800;
 	let _uiUpdateStoryElements = true;
 
-   // NodeJS settings && plus setting
-   let _nodejs = false; // if true, then we are running in node environment
-   let _savePath = "./app/saves"; // path to save file
-   let _waitOnLoad = false; //if true, will wait on loading circle until ready signal
+	// NodeJS settings && plus setting
+	let _nodejs = false; // if true, then we are running in node environment
+	let _savePath = './appdata/saves'; // path to save file
+	let _waitOnLoad = false; // if true, will wait on loading circle until ready signal
    
 	/*******************************************************************************
 		Error Constants.
@@ -92,10 +92,10 @@ var Config = (() => { // eslint-disable-line no-unused-vars, no-var
 			_savePath = String(value);
 		 },
 		
-		get waitOnLoad(){
+		get waitOnLoad() {
 			return _waitOnLoad;
 		},
-		set waitOnLoad(value){
+		set waitOnLoad(value) {
 			_waitOnLoad = Boolean(value);
 		},
 

@@ -136,7 +136,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 			}
 			else {
 				$elems.append(
-				`<div id="story-header" class="bar-extend"></div>
+					`<div id="story-header" class="bar-extend"></div>
 					<div id="story-main">
 						<div id="story" role="main" class="bar-extend">
 							<div id="passages" aria-live="polite"></div>
@@ -419,6 +419,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		Renders and displays the passage referenced by the given title, optionally without
 		adding a new moment to the history.
 	*/
+	// eslint-disable-next-line require-await
 	function enginePlay(title, noHistory) {
 		if (DEBUG) { console.log(`[Engine/enginePlay(title: "${title}", noHistory: ${noHistory})]`); }
 
@@ -431,19 +432,20 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		let passageBeforeOutput;
 		let passageAfterOutput;
 
-		//check the last passage if has leave event
-		if (_lastPassage && Story.has(_lastPassage + ":Leave")) {
+		// check the last passage if has leave event
+		if (_lastPassage && Story.has(`${_lastPassage}:Leave`)) {
 			try {
-				let leave = Wikifier.wikifyEval(
-				Story.get(_lastPassage + ":Leave").text
+				const leave = Wikifier.wikifyEval(
+					Story.get(`${_lastPassage}:Leave`).text
 				);
 
 				if (Config.debug) {
-				console.log("Leave Event: ", _lastPassage, "text:", leave);
+					console.log('Leave Event: ', _lastPassage, 'text:', leave);
 				}
-			} catch (ex) {
+			}
+			catch (ex) {
 				console.error(ex);
-				Alert.error(_lastPassage + ":Leave", ex.message);
+				Alert.error(`${_lastPassage}:Leave`, ex.message);
 			}
 		}
 
@@ -479,7 +481,9 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		// Execute the pre-history events and tasks.
 		jQuery.event.trigger({
 			type : ':passageinit',
-			passage
+
+			passage,
+			lastpassage : Story.get(_lastPassage)
 		});
 		Object.keys(prehistory).forEach(task => {
 			if (typeof prehistory[task] === 'function') {
@@ -488,13 +492,10 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		});
 
 		// Create a new entry in the history.
-		if (!noHistory && !passage.tags.includes("system")) {
+		if (!noHistory && !passage.tags.includes('system')) {
 			State.create(passage.title);
 		}
 
-		// Update the document title and tags to variables.
-		State.temporary.runningTitle = passage.title;
-		State.temporary.currentTags = passage.tags;
 		_lastPassage = passage.title;
 
 		// Clear the document body's classes.
@@ -532,9 +533,10 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		if (Story.has(checkBefore)) {
 			try {
 				passageBeforeOutput = Wikifier.wikifyEval(
-				Story.get(checkBefore).text
+					Story.get(checkBefore).text
 				);
-			} catch (ex) {
+			}
+			catch (ex) {
 				console.error(ex);
 				Alert.error(checkBefore, ex.message);
 			}
@@ -682,9 +684,10 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		if (Story.has(checkAfter)) {
 			try {
 				passageAfterOutput = Wikifier.wikifyEval(
-				Story.get(checkAfter).text
+					Story.get(checkAfter).text
 				);
-			} catch (ex) {
+			}
+			catch (ex) {
 				console.error(ex);
 				Alert.error(checkAfter, ex.message);
 			}
@@ -744,12 +747,12 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 			if (passageBeforeOutput != null) {
 				// lazy equality for null
 				debugView = new DebugView(
-				document.createDocumentFragment(),
-				"special",
-				"PassageBefore",
-				"PassageBefore"
+					document.createDocumentFragment(),
+					'special',
+					'PassageBefore',
+					'PassageBefore'
 				);
-				debugView.modes({ hidden: true });
+				debugView.modes({ hidden : true });
 				debugView.append(passageBeforeOutput);
 				jQuery(passageEl).prepend(debugView.output);
 			}
@@ -757,12 +760,12 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 			if (passageAfterOutput != null) {
 				// lazy equality for null
 				debugView = new DebugView(
-				document.createDocumentFragment(),
-				"special",
-				"PassageAfter",
-				"PassageAfter"
+					document.createDocumentFragment(),
+					'special',
+					'PassageAfter',
+					'PassageAfter'
 				);
-				debugView.modes({ hidden: true });
+				debugView.modes({ hidden : true });
 				debugView.append(passageAfterOutput);
 				jQuery(passageEl).prepend(debugView.output);
 			}

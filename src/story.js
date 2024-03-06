@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /***********************************************************************************************************************
 
 	story.js
@@ -25,17 +26,17 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
 	// List of widget passages.
 	const _widgets = [];
 
-	const _csv = [];
+	const _list = [];
 
-	const _table = [];
+	const _csv = [];
  
 	const _xml = [];
 
 	const _data = {
-		CSV : new Map(),
-		EXCEL : new Map(),
-		XML : new Map()
-	}
+		list : new Map(),
+		csv  : new Map(),
+		xml  : new Map()
+	};
  
 	// Story title.
 	let _title = '';
@@ -58,19 +59,19 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
 			'widget'
 		];
 		const validationNoCodeTagPassages = [
-			"PassageDone",
-			"PassageFooter",
-			"PassageHeader",
-			"PassageReady",
-			"StoryAuthor",
-			"StoryBanner",
-			"StoryCaption",
-			"StoryInit",
-			"StoryMenu",
-			"StoryShare",
-			"StorySubtitle",
-			"StoryHeader",
-			"StoryFooter",
+			'PassageDone',
+			'PassageFooter',
+			'PassageHeader',
+			'PassageReady',
+			'StoryAuthor',
+			'StoryBanner',
+			'StoryCaption',
+			'StoryInit',
+			'StoryMenu',
+			'StoryShare',
+			'StorySubtitle',
+			'StoryHeader',
+			'StoryFooter'
 		];
 
 		function validateStartingPassage(passage) {
@@ -162,14 +163,17 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
 					else if (passage.tags.includes('widget')) {
 						validateSpecialPassages(passage, 'widget');
 						_widgets.push(passage);
-					} else if (passage.tags.includes("csv")) {
-						validateSpecialPassages(passage, "csv");
+					}
+					else if (passage.tags.includes('csv')) {
+						validateSpecialPassages(passage, 'csv');
 						_csv.push(passage);
-					 } else if (passage.tags.includes("table")) {
-						validateSpecialPassages(passage, "table");
-						_table.push(passage);
-					 } else if (passage.tags.includes("xml")) {
-						validateSpecialPassages(passage, "xml");
+					 }
+					else if (passage.tags.includes('list')) {
+						validateSpecialPassages(passage, 'list');
+						_list.push(passage);
+					 }
+					else if (passage.tags.includes('xml')) {
+						validateSpecialPassages(passage, 'xml');
 						_xml.push(passage);
 					 }
 
@@ -257,16 +261,20 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
 						validateSpecialPassages(passage, 'widget');
 						_widgets.push(passage);
 					}
-					else if (passage.tags.includes("csv")) {
-						validateSpecialPassages(passage, "csv");
+					else if (passage.tags.includes('script')) {
+						validateSpecialPassages(passage, 'script');
+						_scripts.push(passage);
+					}
+					else if (passage.tags.includes('csv')) {
+						validateSpecialPassages(passage, 'csv');
 						_csv.push(passage);
 					}
-					else if (passage.tags.includes("table")) {
-						validateSpecialPassages(passage, "table");
-						_table.push(passage);
+					else if (passage.tags.includes('list')) {
+						validateSpecialPassages(passage, 'list');
+						_list.push(passage);
 					}
-					else if (passage.tags.includes("xml")) {
-						validateSpecialPassages(passage, "xml");
+					else if (passage.tags.includes('xml')) {
+						validateSpecialPassages(passage, 'xml');
 						_xml.push(passage);
 					}
 
@@ -298,54 +306,48 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
 
 	function storyInitData() {
 		if (DEBUG) {
-		   console.log("[Story/storyInitData()]");
+		   console.log('[Story/storyInitData()]');
 		}
 		/*
 			  Evaluate the story scripts.
 		  */
-		let errorAlert = false,
-		   alertMsg = "";
+		let errorAlert = false;
+		let alertMsg = '';
 
 		   
 		// Process the story csv.
 		for (let i = 0; i < _csv.length; ++i) {
 		   try {
-			  _data.CSV.set(_csv[i].title, loadCSV(_csv[i].processText()));
-		   } catch (ex) {
-			  console.error(`[error] ${now()} |`, _csv[i].title, _csv[i], ex);
+			  _data.csv.set(_csv[i].title, parseCSV(_csv[i].processText()));
+		   }
+			catch (ex) {
+			  console.error('[error] |', _csv[i].title, _csv[i], ex);
 			  errorAlert = true;
 			  alertMsg += `Catch error on ${_csv[i].title}\n`;
 		   }
 		}
   
-		// Process the story table.
-		for (let i = 0; i < _table.length; ++i) {
+		// Process the story list.
+		for (let i = 0; i < _list.length; ++i) {
 		   try {
-			  _data.EXCEL.set(
-				 _table[i].title,
-				 parseTable(_table[i].processText())
+			  _data.list.set(_list[i].title, parseList(_list[i].processText())
 			  );
-		   } catch (ex) {
-			  console.error(
-				 `[error] ${now()} |`,
-				 _table[i].title,
-				 _table[i],
-				 ex
-			  );
+		   }
+			catch (ex) {
+			  console.error('[error] |', _list[i].title, _list[i], ex);
 			  errorAlert = true;
-			  alertMsg += `Catch error on ${_table[i].title}\n`;
+			  alertMsg += `Catch error on ${_list[i].title}\n`;
 		   }
 		}
   
 		// Process the story xml.
 		for (let i = 0; i < _xml.length; ++i) {
 		   try {
-			 _data.XML.set(
-				 _xml[i].title,
-				 xml2Obj(parseXML(_xml[i].processText()))
+			 _data.xml.set(_xml[i].title, parseXML(_xml[i].processText())
 			  );
-		   } catch (ex) {
-			  console.error(`[error] ${now()} |`, _xml[i].title, _xml[i], ex);
+		   }
+			catch (ex) {
+			  console.error('[error] |', _xml[i].title, _xml[i], ex);
 			  errorAlert = true;
 			  alertMsg += `Catch error on ${_xml[i].title}\n`;
 		   }
@@ -353,13 +355,13 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
   
 		if (errorAlert) {
 		   Alert.error(
-			  `[Error] ${now()} | Story Init Error.`,
-			  `Please check the console for more details.`,
+			  '[Error] | Story Init Error.',
+			  'Please check the console for more details.',
 			  alertMsg
 		   );
 		}
   
-		jQuery.event.trigger({ type: ":initstorydata" });
+		jQuery.event.trigger({ type : ':initstorydata' });
 	 }
 
 	 
@@ -396,7 +398,7 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
 			}
 		}
 
-		jQuery.event.trigger({ type: ":initscript" });
+		jQuery.event.trigger({ type : ':initscript' });
 
 		/*
 			Process the story widgets.
@@ -599,9 +601,9 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
 		return Object.freeze(Array.from(_csv));
 	 }
   
-	 function passageGetAllTable() {
+	 function passageGetAllList() {
 		// NOTE: Return an immutable copy, rather than the internal mutable original.
-		return Object.freeze(Array.from(_table));
+		return Object.freeze(Array.from(_list));
 	 }
   
 	 function passageGetAllXml() {
@@ -609,24 +611,15 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
 		return Object.freeze(Array.from(_xml));
 	 }
 
-	function passagesLookup(key, value  /* legacy */, sortKey = 'title'/* /legacy */) {
+	function passagesLookup(key, sortKey = 'title') {
 		const results = [];
 
 		Object.keys(_passages).forEach(name => {
 			const passage = _passages[name];
-
-			// Objects (sans `null`).
-			if (typeof passage[key] === 'object' && passage[key] !== null) {
-				// The only object type currently supported is `Array`, since the
-				// non-method `Passage` object properties currently yield only either
-				// primitives or arrays.
-				if (passage[key] instanceof Array && passage[key].some(m => Util.sameValueZero(m, value))) {
-					results.push(passage);
-				}
+			if (key && name.includes(key)) {
+				results.push(passage);
 			}
-
-			// All other types (incl. `null`).
-			else if (Util.sameValueZero(passage[key], value)) {
+			else if (!key) {
 				results.push(passage);
 			}
 		});
@@ -681,15 +674,15 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
 	 }
 	 
 	 function setPassage(title, text) {
-		let source = passagesGet(title);
+		const source = passagesGet(title);
 		source.element.innerText = text;
 		return source;
 	 }
 
 	 function newPassage(title, text) {
-		let element = document.createElement("tw-passagedata");
+		const element = document.createElement('tw-passagedata');
 		element.innerText = text;
-		let passage = new Passage(title, element);
+		const passage = new Passage(title, element);
 		passagesAdd(passage);
 		return passage;
 	 }
@@ -699,31 +692,31 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
 	*******************************************************************************************************************/
 	return Object.freeze(Object.defineProperties({}, {
 		// Story Functions.
-		load  : { value : storyLoad },
-		init  : { value : storyInit },
-		initdata: {value: storyInitData },
-		title : { get : storyTitle },
-		domId : { get : storyDomId },
-		ifId  : { get : storyIfId },
+		load     : { value : storyLoad },
+		init     : { value : storyInit },
+		initdata : { value : storyInitData },
+		title    : { get : storyTitle },
+		domId    : { get : storyDomId },
+		ifId     : { get : storyIfId },
 
 		// Passage Functions.
 		add              : { value : passagesAdd },
 		has              : { value : passagesHas },
 		get              : { value : passagesGet },
-		txt				 : { value : getPassageText },
-		set				 : { value : setPassage },
-		create			 : { value : newPassage },
-		getWidget		 : { value:  wigetGet},
+		txt              : { value : getPassageText },
+		set              : { value : setPassage },
+		create           : { value : newPassage },
+		getWidget        : { value : wigetGet },
 		getAllInit       : { value : passagesGetAllInit },
 		getAllRegular    : { value : passagesGetAllRegular },
 		getAllScript     : { value : passagesGetAllScript },
 		getAllStylesheet : { value : passagesGetAllStylesheet },
 		getAllWidget     : { value : passagesGetAllWidget },
-		getAllCSV: { value: passageGetAllCSV },
-		getAllTable: { value: passageGetAllTable },
-		getAllXml: { value: passageGetAllXml },
+		getAllCSV        : { value : passageGetAllCSV },
+		getAllList       : { value : passageGetAllList },
+		getAllXml        : { value : passageGetAllXml },
 		lookup           : { value : passagesLookup },
 		lookupWith       : { value : passagesLookupWith },
-		data			 : { get() { return _data } }
+		data             : { get() { return _data; } }
 	}));
 })();

@@ -724,6 +724,20 @@ var Util = (() => { // eslint-disable-line no-unused-vars, no-var
 		};
 	})();
 
+	function defer(func, ...params) {
+		// eslint-disable-next-line no-undef
+		if (Engine.isIdle()) {
+			$(() => func(...params));
+		}
+		else {
+			$(document).one(':passageend', () => func(...params));
+		}
+	}
+
+	function wait(ms) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
 
 	/*******************************************************************************************************************
 		Module Exports.
@@ -753,7 +767,8 @@ var Util = (() => { // eslint-disable-line no-unused-vars, no-var
 		/*
 			Time Functions.
 		*/
-		now : { value : utilNow },
+		now  : { value : utilNow },
+		wait : { value : wait },
 
 		/*
 			Conversion Functions.
@@ -769,6 +784,11 @@ var Util = (() => { // eslint-disable-line no-unused-vars, no-var
 			Browser API Functions.
 		*/
 		hasMediaQuery : { value : utilHasMediaQuery },
+
+		/*
+			convenience function
+		*/
+		defer : { value : defer },
 
 		/*
 			Legacy Aliases.
