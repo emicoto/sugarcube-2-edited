@@ -44,19 +44,8 @@ var Save = (() => { // eslint-disable-line no-unused-vars, no-var
 			return false;
 		}
 
-		let saves   = savesObjGet();
+		const saves   = savesObjGet();
 		let updated = false;
-
-		/* legacy */
-		// Convert an ancient saves array into a new saves object.
-		if (Array.isArray(saves)) {
-			saves = {
-				autosave : null,
-				slots    : saves
-			};
-			updated = true;
-		}
-		/* /legacy */
 
 		// Handle the author changing the number of save slots.
 		if (Config.saves.slots !== saves.slots.length) {
@@ -83,25 +72,6 @@ var Save = (() => { // eslint-disable-line no-unused-vars, no-var
 
 			updated = true;
 		}
-
-		/* legacy */
-		// Update saves with old/obsolete properties.
-		if (_savesObjUpdate(saves.autosave)) {
-			updated = true;
-		}
-
-		for (let i = 0; i < saves.slots.length; ++i) {
-			if (_savesObjUpdate(saves.slots[i])) {
-				updated = true;
-			}
-		}
-
-		// Remove save stores which are empty.
-		if (_savesObjIsEmpty(saves)) {
-			storage.delete('saves');
-			updated = false;
-		}
-		/* /legacy */
 
 		// If the saves object was updated, then update the store.
 		if (updated) {
@@ -379,9 +349,7 @@ var Save = (() => { // eslint-disable-line no-unused-vars, no-var
 
 			try {
 				saveObj = JSON.parse(
-					/* legacy */ /\.json$/i.test(file.name) || /^\{/.test(reader.result)
-						? reader.result
-						: /* /legacy */ LZString.decompressFromBase64(reader.result)
+					LZString.decompressFromBase64(reader.result)
 				);
 			}
 			catch (ex) { /* no-op; `_unmarshal()` will handle the error */ }

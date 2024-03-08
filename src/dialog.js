@@ -115,8 +115,6 @@ var Dialog = (() => { // eslint-disable-line no-unused-vars, no-var
 		}
 
 		// Trigger a `:dialogclosed` event on the dialog body.
-		/* legacy */
-		_$dialogBody.trigger(':dialogclose');
 		/* /legacy */
 		_$dialogBody.trigger(':dialogclosed');
 
@@ -311,8 +309,6 @@ var Dialog = (() => { // eslint-disable-line no-unused-vars, no-var
 			});
 
 		// Trigger a `:dialogopened` event on the dialog body.
-		/* legacy */
-		_$dialogBody.trigger(':dialogopen');
 		/* /legacy */
 		_$dialogBody.trigger(':dialogopened');
 

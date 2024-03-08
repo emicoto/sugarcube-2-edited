@@ -8,7 +8,7 @@
 ***********************************************************************************************************************/
 /*
 	global Alert, Browser, Config, Dialog, Engine, Fullscreen, Has, LoadScreen, SimpleStore, L10n, Macro, Passage,
-	       Save, Scripting, Setting, SimpleAudio, State, Story, UI, UIBar, DebugBar, Util, Visibility, Wikifier
+	       Save, Scripting, Setting, SimpleAudio, State, Story, UI, UIBar, DebugBar, Util, Visibility, Wikifier, idb
 */
 /* eslint-disable no-var */
 
@@ -84,18 +84,6 @@ var setup = {};
 
 // Persistant storage manager object.
 var storage = null;
-
-/*
-	Legacy aliases.
-*/
-var browser       = Browser;
-var config        = Config;
-var has           = Has;
-var History       = State;
-var state         = State;
-var tale          = Story;
-var TempVariables = State.temporary;
-/* eslint-enable no-unused-vars */
 
 /*
 	Global `SugarCube` object.  Allows scripts to detect if they're running in SugarCube by
@@ -239,7 +227,8 @@ jQuery(() => {
 				settings,
 				setup,
 				storage,
-				version
+				version,
+				idb
 			}))
 		});
 

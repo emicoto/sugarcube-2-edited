@@ -38,7 +38,7 @@ const CONFIG = {
 			'src/lib/prngwrapper.js',
 			'src/lib/stylewrapper.js',
 			'src/lib/diff.js',
-			"src/lib/xml2Obj.js",
+			'src/lib/indexDB.js',
 			'src/l10n/l10n.js',
 			'src/l10n/legacy.js',
 			'src/l10n/strings.js',
@@ -93,15 +93,13 @@ const CONFIG = {
 		'src/vendor/classList.min.js',
 		'src/vendor/es5-shim.min.js',
 		'src/vendor/es6-shim.min.js',
-		'src/vendor/eslib.js',
 		'src/vendor/jquery.min.js',
 		'src/vendor/jquery.ba-throttle-debounce.min.js',
 		'src/vendor/imagesloaded.pkgd.min.js',
 		'src/vendor/lz-string.min.js',
 		'src/vendor/FileSaver.min.js',
 		'src/vendor/seedrandom.min.js',
-		'src/vendor/console-hack.min.js',
-		'src/vendor/path.min.js',
+		'src/vendor/console-hack.min.js'
 	],
 	twine1 : {
 		build : {

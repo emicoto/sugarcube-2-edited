@@ -477,14 +477,14 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		// always refer to `passage.title` and never to the others.
 		const passage = Story.get(passageTitle);
 
-
 		// Execute the pre-history events and tasks.
 		jQuery.event.trigger({
 			type : ':passageinit',
 
 			passage,
-			lastpassage : Story.get(_lastPassage)
+			lastpassage : _lastPassage ? Story.get(_lastPassage) : null
 		});
+
 		Object.keys(prehistory).forEach(task => {
 			if (typeof prehistory[task] === 'function') {
 				prehistory[task].call(passage, task);
