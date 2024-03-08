@@ -23,12 +23,14 @@ function clearComment(array) {
 		}
 		return item;
 	});
+
+	return array;
 }
 
 function formatCSVValues(values) {
 	return values.map(item => {
 		item = item.trim();
-		if (Number(item) !== NaN) {
+		if (isNaN(Number(item)) === false) {
 			item = Number(item);
 		}
 		return item;
@@ -49,6 +51,8 @@ function parseCSV(csv) {
 	for (let i = 1; i < src.length; i++) {
 		const obj = {};
 		let values;
+
+		if (src[i].trim() === '') continue;
 		
 		if (src[i].indexOf('\t') !== -1) {
 			values = src[i].split('\t');
@@ -80,7 +84,8 @@ function parseListCSV(csv) {
 	for (let i = 0; i < src.length; i++) {
 		// split the string
 		let values;
-		
+		if (src[i].trim() === '') continue;
+
 		// if the string contains tab, split by tab otherwise split by comma
 		if (src[i].indexOf('\t') !== -1) {
 			values = src[i].split('\t');
