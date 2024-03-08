@@ -86,6 +86,12 @@ var setup = {};
 var storage = null;
 
 /*
+	Legacy aliases.
+*/
+var TempVariables = State.temporary;
+/* eslint-enable no-unused-vars */
+
+/*
 	Global `SugarCube` object.  Allows scripts to detect if they're running in SugarCube by
 	testing for the object (e.g. `"SugarCube" in window`) and contains exported identifiers
 	for debugging purposes.
