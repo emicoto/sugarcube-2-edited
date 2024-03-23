@@ -8,7 +8,8 @@
 ***********************************************************************************************************************/
 /*
 	global Alert, Browser, Config, Dialog, Engine, Fullscreen, Has, LoadScreen, SimpleStore, L10n, Macro, Passage,
-	       Save, Scripting, Setting, SimpleAudio, State, Story, UI, UIBar, DebugBar, Util, Visibility, Wikifier, idb
+	Errors
+	Save, Scripting, Setting, SimpleAudio, State, Story, UI, UIBar, DebugBar, Util, Visibility, Wikifier, idb
 */
 /* eslint-disable no-var */
 
@@ -59,19 +60,22 @@ var TempState = {};
 var macros = {};
 
 // Post-display task callbacks object.
-var postdisplay = {};
+const postdisplay = {};
 
 // Post-render task callbacks object.
-var postrender = {};
+const postrender = {};
 
 // Pre-display task callbacks object.
-var predisplay = {};
+const predisplay = {};
 
 // Pre-history task callbacks object.
-var prehistory = {};
+const prehistory = {};
 
 // Pre-render task callbacks object.
-var prerender = {};
+const prerender = {};
+
+// A task between passage change
+const prepassage = {};
 
 // Session storage manager object.
 var session = null;
@@ -80,15 +84,11 @@ var session = null;
 var settings = {};
 
 // Setup object.
-var setup = {};
+const setup = {};
 
 // Persistant storage manager object.
 var storage = null;
 
-/*
-	Legacy aliases.
-*/
-var TempVariables = State.temporary;
 /* eslint-enable no-unused-vars */
 
 /*
@@ -234,7 +234,8 @@ jQuery(() => {
 				setup,
 				storage,
 				version,
-				idb
+				idb,
+				Errors
 			}))
 		});
 

@@ -312,7 +312,7 @@
 				$el = jQuery(this.output);
 			}
 
-			$el.wiki(passage.processText());
+			$el.wikify(undefined, passage.title, passage.processText());
 		}
 	});
 
@@ -3744,9 +3744,14 @@
 
 				// Delete the existing widget.
 				Macro.delete(widgetName);
+				
+				// eslint-disable-next-line max-len
+				// Throw an error to alert devs if they've redefined an existing widget (they should definitely not fail to see this while testing.)
+				return this.error(`The "${widgetName}" widget is being defined twice`);
 			}
 
 			try {
+				const macroThis = this;
 				const widgetDef = {
 					isWidget : true,
 					handler  : (function (widgetCode) {
@@ -3792,7 +3797,7 @@
 								const errList = [];
 
 								// Wikify the widget's code.
-								new Wikifier(resFrag, widgetCode);
+								new Wikifier(resFrag, widgetCode, undefined, macroThis.passageTitle);
 
 								// Carry over the output, unless there were errors.
 								Array.from(resFrag.querySelectorAll('.error')).forEach(errEl => {

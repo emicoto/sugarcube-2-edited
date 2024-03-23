@@ -188,7 +188,7 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
 			*/
 			if (_passages.hasOwnProperty('StoryTitle')) {
 				const buf = document.createDocumentFragment();
-				new Wikifier(buf, _passages.StoryTitle.processText().trim());
+				new Wikifier(buf, _passages.StoryTitle.processText().trim(), undefined, 'StoryTitle');
 				_storySetTitle(buf.textContent);
 			}
 			else {
@@ -405,7 +405,7 @@ var Story = (() => { // eslint-disable-line no-unused-vars, no-var
 		*/
 		for (let i = 0; i < _widgets.length; ++i) {
 			try {
-				Wikifier.wikifyEval(_widgets[i].processText());
+				Wikifier.wikifyEval(_widgets[i].processText(), _widgets[i].title, _widgets[i]);
 			}
 			catch (ex) {
 				console.error(ex);

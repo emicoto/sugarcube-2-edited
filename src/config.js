@@ -69,6 +69,11 @@ var Config = (() => { // eslint-disable-line no-unused-vars, no-var
 	const _errSavesOnLoadDeprecated     = 'Config.saves.onLoad has been deprecated, use the Save.onLoad API instead';
 	const _errSavesOnSaveDeprecated     = 'Config.saves.onSave has been deprecated, use the Save.onSave API instead';
 
+	const _errorReporter = {
+		maxlogs   	  : 100,
+		showSelector : '.error-report'
+	};
+
 
 	/*******************************************************************************
 		Object Exports.
@@ -386,6 +391,12 @@ var Config = (() => { // eslint-disable-line no-unused-vars, no-var
 
 			get updateStoryElements() { return _uiUpdateStoryElements; },
 			set updateStoryElements(value) { _uiUpdateStoryElements = Boolean(value); }
-		})
+		}),
+
+		/**
+		 * Error Reporter settings
+		 */
+		get errorReporter() { return _errorReporter; }
+
 	});
 })();

@@ -21,9 +21,7 @@ const CONFIG = {
 		files : [
 			// The ordering herein is significant.
 			'src/lib/alert.js',
-			'src/lib/patterns.js',
-			'src/lib/extensions.js',
-			'src/lib/browser.js',
+			// 'src/lib/extensions.js', move out and combine to vendor/eslib.js
 			'src/lib/has.js',
 			'src/lib/visibility.js',
 			'src/lib/fullscreen.js',
@@ -54,6 +52,7 @@ const CONFIG = {
 			'src/macros/macro.js',
 			'src/macros/macrocontext.js',
 			'src/macros/macrolib.js',
+			'src/Errors.js',
 			'src/dialog.js',
 			'src/engine.js',
 			'src/passage.js',
@@ -99,7 +98,11 @@ const CONFIG = {
 		'src/vendor/lz-string.min.js',
 		'src/vendor/FileSaver.min.js',
 		'src/vendor/seedrandom.min.js',
-		'src/vendor/console-hack.min.js'
+		'src/vendor/console-hack.min.js',
+		'src/lib/patterns.js',
+		'src/vendor/eslib.js',
+		'src/vendor/exutil.js',
+		'src/lib/browser.js'
 	],
 	twine1 : {
 		build : {

@@ -8,7 +8,7 @@
 ***********************************************************************************************************************/
 /*
 	global Alert, Config, DebugView, Dialog, Has, LoadScreen, Save, State, Story, StyleWrapper, UI, UIBar, Util,
-	       Wikifier, postdisplay, postrender, predisplay, prehistory, prerender, setDisplayTitle
+	Wikifier, postdisplay, postrender, predisplay, prehistory, prerender, setDisplayTitle, prepassage
 */
 
 var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
@@ -39,7 +39,12 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 	// List of objects describing `StoryInterface` elements to update via passages during navigation.
 	let _updating = null;
 
-	let _lastPassage = null;
+	const _session = {
+		title       : null,
+		lastTitle   : null,
+		passage     : null,
+		lastPassage : null
+	};
 
 	/*******************************************************************************************************************
 		Engine Functions.
@@ -59,6 +64,9 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 			Generate the core story elements and insert them into the page before the store area.
 		*/
 		(() => {
+			const $main = jQuery(document.createElement('div'));
+			$main.attr('id', 'main');
+
 			const $elems = jQuery(document.createDocumentFragment());
 			const markup = Story.has('StoryInterface') && Story.get('StoryInterface').text.trim();
 
@@ -423,31 +431,27 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 	function enginePlay(title, noHistory) {
 		if (DEBUG) { console.log(`[Engine/enginePlay(title: "${title}", noHistory: ${noHistory})]`); }
 
-		let passageTitle = title;
 
+		// update lastsession
+		if (_session.title !== null) {
+			_session.lastTitle = _session.title;
+			_session.lastPassage = Story.get(_session.lastPassage);
+		}
 
+		_session.title = title;
+		_session.passage = null;
+		
 		// Debug view setup.
 		let passageReadyOutput;
 		let passageDoneOutput;
-		let passageBeforeOutput;
-		let passageAfterOutput;
 
-		// check the last passage if has leave event
-		if (_lastPassage && Story.has(`${_lastPassage}:Leave`)) {
-			try {
-				const leave = Wikifier.wikifyEval(
-					Story.get(`${_lastPassage}:Leave`).text
-				);
 
-				if (Config.debug) {
-					console.log('Leave Event: ', _lastPassage, 'text:', leave);
-				}
+		// pre-passage events. mostly use on between last passage and this passage
+		Object.keys(prepassage).forEach(task => {
+			if (typeof prepassage[task] === 'function') {
+				prepassage[task].call(_session, task);
 			}
-			catch (ex) {
-				console.error(ex);
-				Alert.error(`${_lastPassage}:Leave`, ex.message);
-			}
-		}
+		});
 
 		// Update the engine state.
 		_state = States.Playing;
@@ -460,10 +464,10 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		// Execute the navigation override callback.
 		if (typeof Config.navigation.override === 'function') {
 			try {
-				const overrideTitle = Config.navigation.override(passageTitle);
+				const overrideTitle = Config.navigation.override(_session.title, _session);
 
 				if (overrideTitle) {
-					passageTitle = overrideTitle;
+					_session.title = overrideTitle;
 				}
 			}
 			catch (ex) { /* no-op */ }
@@ -475,28 +479,29 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		// may be empty, strings, or numbers (though using a number as reference
 		// to a numeric title should be discouraged), so after loading the passage,
 		// always refer to `passage.title` and never to the others.
-		const passage = Story.get(passageTitle);
-
 		// Execute the pre-history events and tasks.
 		jQuery.event.trigger({
-			type : ':passageinit',
-
-			passage,
-			lastpassage : _lastPassage ? Story.get(_lastPassage) : null
+			type    : ':passageinit',
+			session : _session
 		});
 
 		Object.keys(prehistory).forEach(task => {
 			if (typeof prehistory[task] === 'function') {
-				prehistory[task].call(passage, task);
+				prehistory[task].call(_session, task);
 			}
 		});
+
+		// Update the session state after the pre-history events and tasks.
+		_session.passage = Story.get(_session.title);
+		
+		// should not change the passage anymore after prehistory events
+		const passage = _session.passage;
+
 
 		// Create a new entry in the history.
 		if (!noHistory && !passage.tags.includes('system')) {
 			State.create(passage.title);
 		}
-
-		_lastPassage = passage.title;
 
 		// Clear the document body's classes.
 		if (document.body.className) {
@@ -524,21 +529,6 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 			catch (ex) {
 				console.error(ex);
 				Alert.error('PassageReady', ex.message);
-			}
-		}
-
-		// Execute the task before specific passage
-		const checkBefore = `${passage.title}:Before`;
-
-		if (Story.has(checkBefore)) {
-			try {
-				passageBeforeOutput = Wikifier.wikifyEval(
-					Story.get(checkBefore).text
-				);
-			}
-			catch (ex) {
-				console.error(ex);
-				Alert.error(checkBefore, ex.message);
 			}
 		}
 
@@ -573,6 +563,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 			content : passageEl,
 			passage
 		});
+		
 		Object.keys(prerender).forEach(task => {
 			if (typeof prerender[task] === 'function') {
 				prerender[task].call(passage, passageEl, task);
@@ -581,7 +572,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 
 		// Render the `PassageHeader` passage, if it exists, into the passage element.
 		if (Story.has('PassageHeader')) {
-			new Wikifier(passageEl, Story.get('PassageHeader').processText());
+			new Wikifier(passageEl, Story.get('PassageHeader').processText(), 'PassageHeader');
 		}
 
 		// Render the passage into its element.
@@ -589,7 +580,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 
 		// Render the `PassageFooter` passage, if it exists, into the passage element.
 		if (Story.has('PassageFooter')) {
-			new Wikifier(passageEl, Story.get('PassageFooter').processText());
+			new Wikifier(passageEl, Story.get('PassageFooter').processText(), 'PassageFooter');
 		}
 
 		// Execute post-render events and tasks.
@@ -677,22 +668,6 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		// Update the engine state.
 		_state = States.Playing;
 
-
-		// Execute the task after specific passage
-		const checkAfter = `${passage.title}:After`;
-
-		if (Story.has(checkAfter)) {
-			try {
-				passageAfterOutput = Wikifier.wikifyEval(
-					Story.get(checkAfter).text
-				);
-			}
-			catch (ex) {
-				console.error(ex);
-				Alert.error(checkAfter, ex.message);
-			}
-		}
-
 		// Execute post-display events, tasks, and the `PassageDone` special passage.
 		if (Story.has('PassageDone')) {
 			try {
@@ -709,6 +684,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 			content : passageEl,
 			passage
 		});
+
 		Object.keys(postdisplay).forEach(task => {
 			if (typeof postdisplay[task] === 'function') {
 				postdisplay[task].call(passage, task);
@@ -719,7 +695,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		if (_updating !== null) {
 			_updating.forEach(pair => {
 				jQuery(pair.element).empty();
-				new Wikifier(pair.element, Story.get(pair.passage).processText().trim());
+				new Wikifier(pair.element, Story.get(pair.passage).processText().trim(), pair.passage.title);
 			});
 		}
 		else if (Config.ui.updateStoryElements) {
@@ -743,32 +719,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 				debugView.append(passageReadyOutput);
 				jQuery(passageEl).prepend(debugView.output);
 			}
-			// Prepend the PassageName:Before debug view.
-			if (passageBeforeOutput != null) {
-				// lazy equality for null
-				debugView = new DebugView(
-					document.createDocumentFragment(),
-					'special',
-					'PassageBefore',
-					'PassageBefore'
-				);
-				debugView.modes({ hidden : true });
-				debugView.append(passageBeforeOutput);
-				jQuery(passageEl).prepend(debugView.output);
-			}
-			// Prepend the PassageName:After debug view.
-			if (passageAfterOutput != null) {
-				// lazy equality for null
-				debugView = new DebugView(
-					document.createDocumentFragment(),
-					'special',
-					'PassageAfter',
-					'PassageAfter'
-				);
-				debugView.modes({ hidden : true });
-				debugView.append(passageAfterOutput);
-				jQuery(passageEl).prepend(debugView.output);
-			}
+
 			// Append the `PassageDone` debug view.
 			if (passageDoneOutput != null) { // lazy equality for null
 				debugView = new DebugView(
@@ -886,6 +837,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		*/
 		States            : { value : States },
 		minDomActionDelay : { value : minDomActionDelay },
+		session           : { get : () => _session },
 
 		/*
 			Core Functions.

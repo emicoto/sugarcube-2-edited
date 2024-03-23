@@ -6,7 +6,7 @@
 	Use of this source code is governed by a BSD 2-clause "Simplified" License, which may be found in the LICENSE file.
 
 ***********************************************************************************************************************/
-/* global Patterns, Scripting, macros */
+/* global Patterns, Scripting, macros, State, Wikifier */
 
 var Macro = (() => { // eslint-disable-line no-unused-vars, no-var
 	'use strict';
@@ -48,7 +48,15 @@ var Macro = (() => { // eslint-disable-line no-unused-vars, no-var
 				// NOTE: Since `macrosGet()` may return legacy macros, we add the `_MACRO_API`
 				// flag to (modern) API macros, so that the macro formatter will know how to
 				// call the macro.  This should be removed in v3.
-				_macros[name] = Object.assign(Object.create(null), def, { _MACRO_API : true });
+
+				const psgTitle = Wikifier.getPassageTitleLast();
+				const psgObj = Wikifier.getPassageObj();
+
+				_macros[name] = Object.assign(Object.create(null), def, {
+					_MACRO_API   : true,
+					passageTitle : psgTitle,
+					passageObj   : psgObj
+				});
 			}
 			else {
 				// Add the macro alias.
@@ -213,6 +221,47 @@ var Macro = (() => { // eslint-disable-line no-unused-vars, no-var
 		return tagsHas(name) ? _tags[name] : null;
 	}
 
+	/**
+	 * @description Register a function as macro.
+	 * @param {string} macroName
+	 * @param {Function} macroFunction
+	 * @param {array} tags
+	 * @param {boolean} skipArgs
+	 */
+	function regist(macroName, macroFunction, tags, skipArgs) {
+		macrosAdd(macroName, {
+			isWidget : true,
+			tags,
+			skipArgs,
+			handler() {
+				const _args = State.temporary.args;
+
+				try {
+					const content = macroFunction.apply(this, this.args);
+				
+					State.temporary.args = [...this.args];
+					State.temporary.args.raw = this.args.raw;
+					State.temporary.args.full = this.args.full;
+
+					if (typeof output !== 'undefined') {
+						this.content = content;
+						jQuery(this.output).wiki(content);
+					}
+
+					if (typeof _args === 'undefined') {
+						delete State.temporary.args;
+					}
+					else {
+						State.temporary.args = _args;
+					}
+				}
+				catch (error) {
+					throw new Error(`Error in macro <<${macroName}>>: ${error.message}`);
+				}
+			}
+		});
+	}
+
 
 	/*******************************************************************************************************************
 		Module Exports.
@@ -227,6 +276,7 @@ var Macro = (() => { // eslint-disable-line no-unused-vars, no-var
 		has     : { value : macrosHas },
 		get     : { value : macrosGet },
 		init    : { value : macrosInit },
+		regist  : { value : regist },
 
 		/*
 			Tags Functions.

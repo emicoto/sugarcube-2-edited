@@ -239,16 +239,7 @@ var Scripting = (() => { // eslint-disable-line no-unused-vars, no-var
 	/*******************************************************************************************************************
 		User Functions.
 	*******************************************************************************************************************/
-	/*
-		Returns a random value from its given arguments.
-	*/
-	function either(/* variadic */) {
-		if (arguments.length === 0) {
-			return;
-		}
 
-		return Array.prototype.concat.apply([], arguments).random();
-	}
 
 	/*
 		Removes the given key, and its value, from the story metadata store.
@@ -359,78 +350,6 @@ var Scripting = (() => { // eslint-disable-line no-unused-vars, no-var
 		}
 
 		return '';
-	}
-
-	/*
-		Returns a pseudo-random whole number (integer) within the range of the given bounds.
-	*/
-	function random(/* [min ,] max */) {
-		let min;
-		let max;
-
-		switch (arguments.length) {
-		case 0:
-			throw new Error('random called with insufficient parameters');
-		case 1:
-			min = 0;
-			max = Math.trunc(arguments[0]);
-			break;
-		default:
-			min = Math.trunc(arguments[0]);
-			max = Math.trunc(arguments[1]);
-			break;
-		}
-
-		if (!Number.isInteger(min)) {
-			throw new Error('random min parameter must be an integer');
-		}
-		if (!Number.isInteger(max)) {
-			throw new Error('random max parameter must be an integer');
-		}
-
-		if (min > max) {
-			[min, max] = [max, min];
-		}
-
-		return Math.floor(State.random() * (max - min + 1)) + min;
-	}
-
-	/*
-		Returns a pseudo-random real number (floating-point) within the range of the given bounds.
-
-		NOTE: Unlike with its sibling function `random()`, the `max` parameter
-		is exclusive, not inclusive—i.e. the range goes to, but does not include,
-		the given value.
-	*/
-	function randomFloat(/* [min ,] max */) {
-		let min;
-		let max;
-
-		switch (arguments.length) {
-		case 0:
-			throw new Error('randomFloat called with insufficient parameters');
-		case 1:
-			min = 0.0;
-			max = Number(arguments[0]);
-			break;
-		default:
-			min = Number(arguments[0]);
-			max = Number(arguments[1]);
-			break;
-		}
-
-		if (Number.isNaN(min) || !Number.isFinite(min)) {
-			throw new Error('randomFloat min parameter must be a number');
-		}
-		if (Number.isNaN(max) || !Number.isFinite(max)) {
-			throw new Error('randomFloat max parameter must be a number');
-		}
-
-		if (min > max) {
-			[min, max] = [max, min];
-		}
-
-		return State.random() * (max - min) + min;
 	}
 
 	/*

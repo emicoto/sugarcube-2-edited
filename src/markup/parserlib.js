@@ -167,9 +167,10 @@
 									name,
 									args,
 									payload,
-									source : w.source.slice(matchStart, w.nextMatch),
-									parent : this.context,
-									parser : w
+									source     : w.source.slice(matchStart, w.nextMatch),
+									parent     : this.context,
+									parser     : w,
+									passageObj : w.passageObj
 								});
 
 								/*

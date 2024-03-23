@@ -302,6 +302,24 @@
 			}
 		},
 
+		/**
+		 * subwiki when run with a passage data
+		 */
+		wikify(options, title, source) {
+			// Wikify the content sources into a fragment.
+			const frag = document.createDocumentFragment();
+			new Wikifier(frag, source, options, title);
+
+			// Gather the text of any error elements within the fragment…
+			const errors = [...frag.querySelectorAll('.error')]
+				.map(errEl => errEl.textContent.replace(errorPrologRegExp, ''));
+
+			// …and throw an exception, if there were any errors.
+			if (errors.length > 0) {
+				throw new Error(errors.join('; '));
+			}
+		},
+
 		/*
 			Extend jQuery's static methods with a `wiki()` method.
 		*/

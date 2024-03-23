@@ -17,6 +17,7 @@ var MacroContext = (() => { // eslint-disable-line no-unused-vars, no-var
 	class MacroContext {
 		constructor(contextData) {
 			const context = Object.assign({
+				passageObj  : null,
 				parent      : null,
 				macro       : null,
 				name        : '',
@@ -34,6 +35,10 @@ var MacroContext = (() => { // eslint-disable-line no-unused-vars, no-var
 			Object.defineProperties(this, {
 				self : {
 					value : context.macro
+				},
+
+				passageObj : {
+					value : context.passageObj
 				},
 
 				name : {
@@ -168,6 +173,11 @@ var MacroContext = (() => { // eslint-disable-line no-unused-vars, no-var
 		}
 
 		createShadowWrapper(callback, doneCallback, startCallback) {
+			/*
+			if (!this.passageObj) {
+				console.error('createShadowWrapper(): No passageObj.', this, this.passageObj);
+			}
+			*/
 			const shadowContext = this;
 			let shadowStore;
 

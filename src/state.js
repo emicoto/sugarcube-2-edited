@@ -6,7 +6,7 @@
 	Use of this source code is governed by a BSD 2-clause "Simplified" License, which may be found in the LICENSE file.
 
 ***********************************************************************************************************************/
-/* global Config, Diff, Engine, PRNGWrapper, Scripting, clone, session, storage */
+/* global Config, Diff, PRNGWrapper, Scripting, clone, session, storage */
 
 var State = (() => { // eslint-disable-line no-unused-vars, no-var
 	'use strict';
@@ -593,10 +593,6 @@ var State = (() => { // eslint-disable-line no-unused-vars, no-var
 		if (DEBUG) { console.log('[State/tempVariablesClear()]'); }
 
 		_tempVariables = {};
-
-		/* legacy */
-		TempVariables = _tempVariables; // eslint-disable-line no-undef
-		/* /legacy */
 	}
 
 	/*
@@ -792,17 +788,6 @@ var State = (() => { // eslint-disable-line no-unused-vars, no-var
 				set     : { value : metadataSet },
 				size    : { get : metadataSize }
 			}))
-		},
-
-		/*
-			Legacy Aliases.
-		*/
-		initPRNG : { value : prngInit },
-		restart  : { value : () => Engine.restart() },
-		backward : { value : () => Engine.backward() },
-		forward  : { value : () => Engine.forward() },
-		display  : { value : (...args) => Engine.display(...args) },
-		show     : { value : (...args) => Engine.show(...args) },
-		play     : { value : (...args) => Engine.play(...args) }
+		}
 	}));
 })();

@@ -160,14 +160,6 @@ function parseXML(xml, arrayTags) {
 
 	return result;
 }
- 
-function createPassage(title, text) {
-	const element = document.createElement('tw-passagedata');
-	element.innerText = text;
-	const passage = new Passage(title, element);
-	Story.add(passage);
-	return passage;
-}
 
 function printTemplate(sourceText, ...args) {
 	let txt = sourceText;
@@ -187,6 +179,5 @@ Object.defineProperties(window, {
 	parseCSV      : { value : parseCSV },
 	parseList     : { value : parseListCSV },
 	parseXML      : { value : parseXML },
-	printTemplate : { value : printTemplate },
-	createPassage : { value : createPassage }
+	printTemplate : { value : printTemplate }
 });
