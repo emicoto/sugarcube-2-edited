@@ -1,0 +1,31 @@
+.hidden {
+	display: none !important;
+}
+
+.Abc {
+    text-transform: capitalize;
+}
+  
+.ABC {
+    text-transform: uppercase;
+}
+
+.abc {
+    text-transform: lowercase;
+}
+
+.graytext {
+    color:gray
+}
+
+.redtext {
+	color: rgb(237, 14, 54)
+}
+
+.yellowtext {
+	color: yellow
+}
+
+.goldtext {
+	color: rgb(197, 194, 22)
+}

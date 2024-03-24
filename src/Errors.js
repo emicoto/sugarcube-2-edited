@@ -17,6 +17,8 @@
 var Errors = (() => {
 	'use strict';
 
+	let _footertext = 'Please report any errors to the devs.';
+
 	const reporter = {
 		logs : [],
 
@@ -40,17 +42,16 @@ var Errors = (() => {
 		},
 
 		show(selector) {
-			const el = selector.parentElement;
-			const detail = el.nextElementSibling;
-			if (detail.classList.contains('hidden')) {
-				detail.classList.remove('hidden');
+			const el = selector.parentNode.nextElementSibling;
+			if (el.classList.contains('hidden')) {
+				el.classList.remove('hidden');
 				// eslint-disable-next-line no-param-reassign
-				selector.innerHTML = '▼';
+				selector.querySelector('.error-log-showdetail').innerHTML = '▼';
 			}
 			else {
-				detail.classList.add('hidden');
+				el.classList.add('hidden');
 				// eslint-disable-next-line no-param-reassign
-				selector.innerHTML = '▶';
+				selector.querySelector('.error-log-showdetail').innerHTML = '▶';
 			}
 		},
 
@@ -78,6 +79,9 @@ var Errors = (() => {
 		if (el && el.classList.contains('hidden')) {
 			el.classList.remove('hidden');
 		}
+		else if (el) {
+			reporter.update();
+		}
 		else {
 			drawView();
 			reporter.update();
@@ -96,15 +100,21 @@ var Errors = (() => {
 		elment.id = 'error-report-box';
 		elment.className = 'error-report';
 		elment.innerHTML = `
+			<div id="error-report-title">
+				<h3>Errors</h3>
+				<div class="error-close-button" onClick="Errors.reporter.close()">X</div>
+			</div>
 			<div id="error-report-panel">
-				<h3>Error Report</h3>
 				<div class="error-report-logs"></div>
-				<div class="error-close-button" onClick="Errors.Reporter.close()">X</div>
-				<div class="error-clear-button" onClick="Errors.Reporter.clear()">Clear</div>
-				<div class="error-copy-button" onClick="Errors.Reporter.copyAll()">Copy</div>
+			</div>
+			<div id="error-report-footer">
+				<div class="error-report-footer-text">${_footertext}</div>
+				<div class="error-clear-button" onClick="Errors.reporter.clear()">Clear</div>
+				<div class="error-copy-button" onClick="Errors.reporter.copyAll()">Copy</div>
 			</div>
 		`;
-		document.getElementById('main').appendChild(elment);
+		document.getElementById('story-main').appendChild(elment);
+		$(elment).draggable({ handle : '#error-report-title' });
 	}
 	
 	function formatErrorObj(obj) {
@@ -123,11 +133,10 @@ var Errors = (() => {
 		log.className = 'error-report-log';
 		log.innerHTML = `
 		<div class="error-log-banner">	
-			<div class="error-log-showdetail" onClick="Errors.Reporter.show(this)" title="show details">▶</div>
-			<div class="error-log-message">${logdata.message}</div>
+			<div class="error-log-message" onClick="Errors.reporter.show(this)" title="click to show detials"><span class="error-log-showdetail">▶</span>${logdata.message}</div>
 		</div>
 		<div class="error-log-detail hidden">
-			<textarea class="error-log-entry" readonly onClick="Errors.Reporter.copy(this)">${logdata.message}\nsources:\n${logdata.source}\n\nstackdata:\n${formatErrorObj(logdata.data)}</textarea>
+			<textarea class="error-log-entry" readonly onClick="Errors.reporter.copy(this)">${logdata.message}\nsources:\n${logdata.source}\n\nstackdata:\n${formatErrorObj(logdata.data)}</textarea>
 		</div>
 		`;
 
@@ -170,6 +179,14 @@ var Errors = (() => {
 	}
 
 	return Object.seal({
+		get text() {
+			return _footertext;
+		},
+
+		set text(value) {
+			_footertext = value;
+		},
+
 		get logs() {
 			return reporter.logs;
 		},

@@ -84,7 +84,9 @@ const CONFIG = {
 			'src/css/ui-dialog.css',
 			'src/css/ui.css',
 			'src/css/ui-bar.css',
-			'src/css/ui-debug.css'
+			'src/css/ui-debug.css',
+			'src/css/errors.css',
+			'src/css/general.css'
 		]
 	},
 	libs : [
