@@ -225,17 +225,13 @@ var Macro = (() => { // eslint-disable-line no-unused-vars, no-var
 	 * @description Register a function as macro.
 	 * @param {string} macroName
 	 * @param {Function} macroFunction
-	 * @param {array} tags
 	 * @param {boolean} skipArgs
 	 */
-	function regist(macroName, macroFunction, tags, skipArgs) {
+	function regist(macroName, macroFunction, skipArgs) {
 		macrosAdd(macroName, {
 			isWidget : true,
-			tags,
 			skipArgs,
 			handler() {
-				const _args = State.temporary.args;
-
 				try {
 					const content = macroFunction.apply(this, this.args);
 				
@@ -243,16 +239,9 @@ var Macro = (() => { // eslint-disable-line no-unused-vars, no-var
 					State.temporary.args.raw = this.args.raw;
 					State.temporary.args.full = this.args.full;
 
-					if (typeof output !== 'undefined') {
+					if (content !== 'undefined') {
 						this.content = content;
 						jQuery(this.output).wiki(content);
-					}
-
-					if (typeof _args === 'undefined') {
-						delete State.temporary.args;
-					}
-					else {
-						State.temporary.args = _args;
 					}
 				}
 				catch (error) {
