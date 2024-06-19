@@ -97,7 +97,6 @@ var storage = null;
 	for debugging purposes.
 */
 window.SugarCube = {};
-
 /*
 	Main function, entry point for the story.
 */
@@ -132,6 +131,41 @@ jQuery(() => {
 		// NOTE: `SimpleStore.create(storageId, persistent)`
 		storage = SimpleStore.create(Story.domId, true);
 		session = SimpleStore.create(Story.domId, false);
+
+		// export identifiers.
+		Object.defineProperty(window, 'SugarCube', {
+			// WARNING: We need to assign new values at points, so seal it, do not freeze it.
+			value : Object.seal(Object.assign(Object.create(null), {
+				Browser,
+				Config,
+				Dialog,
+				Engine,
+				Fullscreen,
+				Has,
+				L10n,
+				Macro,
+				Passage,
+				Save,
+				Scripting,
+				Setting,
+				SimpleAudio,
+				State,
+				Story,
+				UI,
+				UIBar,
+				DebugBar,
+				Util,
+				Visibility,
+				Wikifier,
+				session,
+				settings,
+				setup,
+				storage,
+				version,
+				idb,
+				Errors
+			}))
+		});
 
 		// Initialize the user interface (must be done before story initialization, specifically before scripts).
 		Dialog.init();
@@ -203,41 +237,6 @@ jQuery(() => {
 			// Release the loading screen lock after a short delay.
 			setTimeout(() => LoadScreen.unlock(lockId), Engine.minDomActionDelay * 2);
 		}, Engine.minDomActionDelay);
-
-		// Finally, export identifiers for debugging purposes.
-		Object.defineProperty(window, 'SugarCube', {
-			// WARNING: We need to assign new values at points, so seal it, do not freeze it.
-			value : Object.seal(Object.assign(Object.create(null), {
-				Browser,
-				Config,
-				Dialog,
-				Engine,
-				Fullscreen,
-				Has,
-				L10n,
-				Macro,
-				Passage,
-				Save,
-				Scripting,
-				Setting,
-				SimpleAudio,
-				State,
-				Story,
-				UI,
-				UIBar,
-				DebugBar,
-				Util,
-				Visibility,
-				Wikifier,
-				session,
-				settings,
-				setup,
-				storage,
-				version,
-				idb,
-				Errors
-			}))
-		});
 
 		if (DEBUG) { console.log('[SugarCube/main()] Startup complete; story ready.'); }
 	}

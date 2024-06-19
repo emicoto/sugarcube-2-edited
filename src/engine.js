@@ -435,7 +435,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		// update lastsession
 		if (_session.title !== null) {
 			_session.lastTitle = _session.title;
-			_session.lastPassage = Story.get(_session.lastPassage);
+			_session.lastPassage = Story.get(_session.lastTitle);
 		}
 
 		_session.title = title;

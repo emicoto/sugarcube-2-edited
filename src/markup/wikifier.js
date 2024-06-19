@@ -1274,3 +1274,26 @@ var Wikifier = (() => { // eslint-disable-line no-unused-vars, no-var
 	return Wikifier;
 })();
 /* eslint-enable max-len */
+
+// eslint-disable-next-line strict
+function wikifier(_str, ...args) {
+	let output = `<<${_str} `;
+	if (args && args.length > 0) {
+		for (let i = 0; i < args.length; i++) {
+			output += ` ${args[i]}`;
+		}
+	}
+	output += '>>';
+	new Wikifier(null, output);
+}
+
+// eslint-disable-next-line strict
+function wikify(_str) {
+	new Wikifier(null, _str);
+}
+
+Object.defineProperties(window, {
+	Wikifier : { value : Wikifier },
+	wikifier : { value : wikifier },
+	wikify   : { value : wikify }
+});
