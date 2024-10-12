@@ -145,12 +145,12 @@ var Errors = (() => {
 
 
 	function record(message, source, data) {
-		while (reporter.logs.length >= Config.debug.maxLogEntries) {
+		while (reporter.logs.length >= Config.maxErrorLogs) {
 			reporter.logs.shift();
 		}
 
 		const error = { message, source, data };
-		reporter.logs.push(JSON.parse(JSON.stringify(error)));
+		reporter.logs.push(error);
 
 		return error;
 	}

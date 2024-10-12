@@ -311,8 +311,7 @@
 			else {
 				$el = jQuery(this.output);
 			}
-
-			$el.wikify(undefined, passage.title, passage.processText());
+			$el.wikify(null, passage.processText(), passage.title);
 		}
 	});
 
@@ -1044,6 +1043,8 @@
 				}
 
 				while (evalJavaScript(condition)) {
+					if (Wikifier.stopWikify) return;
+
 					if (--safety < 0) {
 						return this.error(`exceeded configured maximum loop iterations (${Config.macros.maxLoopIterations})`);
 					}
@@ -3861,6 +3862,15 @@
 			catch (ex) {
 				return this.error(`cannot create widget macro "${widgetName}": ${ex.message}`);
 			}
+		}
+	});
+
+	/*
+		<<exit>>
+	*/
+	Macro.add(['exit', 'exitAll'], {
+		handler() {
+			Wikifier.stopWikify = this.name === 'exit' ? 1 : 2;
 		}
 	});
 })();

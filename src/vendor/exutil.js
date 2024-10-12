@@ -114,24 +114,20 @@
 	}
 
     // return a random element from an array by rate
-    function maybe(arr) {
+    function maybe(...arrays) {
         let txt;
-        arr.forEach((v, i) => {
-            if (random(100) < v[1]) txt = v[0];
-        });
+		
+		for (const arr of arrays) {
+			if (random(100) < arr[1]) {
+				txt = arr[0];
+				break;
+			}
+		}
 
         if (!txt) {
             return arr[0][0];
         }
         return txt;
-    }
-    // swap two elements in an array
-    function swap(arr, a, b) {
-        const c = arr[a];
-        const d = arr[b];
-        arr[b] = c;
-        arr[a] = d;
-        return arr;
     }
 
     // get and set object by path
@@ -188,7 +184,7 @@
 			[min, max] = [max, min];
 		}
 
-		return Math.floor(State.random() * (max - min + 1)) + min;
+		return Math.floor(SugarCube.State.random() * (max - min + 1)) + min;
 	}
 
 
@@ -227,7 +223,7 @@
 			[min, max] = [max, min];
 		}
 
-		return State.random() * (max - min) + min;
+		return SugarCube.State.random() * (max - min) + min;
 	}
 
 	/**
@@ -262,9 +258,13 @@
 
         if (props === undefined || props === null) return false;
 
-        if (isArray || type == 'string') {
+        if (isArray) {
             return props.length > 0;
         }
+
+		if (type == 'string') {
+			return props.trim().length > 0;
+		}
 
 		if (type == 'number') {
 			return !isNaN(props);
@@ -293,15 +293,6 @@
         );
     }
 
-    // compare two elements in an object
-    function compares(key) {
-        return function (m, n) {
-            const a = m[key];
-            const b = n[key];
-            return b - a;
-        };
-    }
-
     // sum all the values in a simple object
     function sumObj(obj) {
         let sum = 0;
@@ -313,6 +304,58 @@
 		return sum;
     }
 
+//compare and sort a simple object by its values, from small to large
+	function sortObj(obj) {
+		const keys = Object.keys(obj);
+		if (keys.length < 2) return obj;
+		
+		return keys.sort((a, b) => obj[a] - obj[b]).reduce((acc, key) => {
+			acc[key] = obj[key];
+			return acc;
+		}, {});
+	}
+
+	//compare and sort a simple object by its values, from large to small
+	function sortObjL(obj) {
+		const keys = Object.keys(obj);
+		if (keys.length < 2) return obj;
+		
+		return keys.sort((a, b) => obj[b] - obj[a]).reduce((acc, key) => {
+			acc[key] = obj[key];
+			return acc;
+		}, {});
+	}
+
+	//compare and sort a simple object by its keys, from a to z
+	function sortObjK(obj) {
+		const keys = Object.keys(obj);
+		if (keys.length < 2) return obj;
+		
+		return keys.sort().reduce((acc, key) => {
+			acc[key] = obj[key];
+			return acc;
+		}, {});
+	}
+
+	function isObject(obj) {
+		return obj !== null && String(obj) === '[object Object]';
+	}
+
+	function createDiv (id, html, classname, parent) {
+		const div = document.createElement('div');
+		div.id = id;
+		div.className = classname ?? '';
+		div.innerHTML = html ?? '';
+
+		if (parent){
+			if (typeof parent === 'string') {
+				parent = document.getElementById(parent);
+			}
+			parent.appendChild(div);
+		}
+		return div;
+	}
+
 	Object.defineProperties(window, {
 		clone       : { value : clone },
 		either      : { value : either },
@@ -322,13 +365,16 @@
 		inrange     : { value : inrange },
 		isValid     : { value : isValid },
 		groupmatch  : { value : groupmatch },
-        swap          : { value : swap },
         setPath       : { value : setPath },
         getPath       : { value : getPath },
         maybe         : { value : maybe },
         getKeyByValue : { value : getKeyByValue },
-        compares      : { value : compares },
         sumObj        : { value : sumObj },
+		sortObj       : { value : sortObj },
+		sortObjL      : { value : sortObjL },
+		sortObjK      : { value : sortObjK },
+		isObject      : { value : isObject },
+		createDiv     : { value : createDiv }
 	});
 
 })()

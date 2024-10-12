@@ -305,10 +305,11 @@
 		/**
 		 * subwiki when run with a passage data
 		 */
-		wikify(options, title, source) {
+		wikify(options, source, title) {
 			// Wikify the content sources into a fragment.
 			const frag = document.createDocumentFragment();
 			new Wikifier(frag, source, options, title);
+			console.log('jQuery.wikify:',frag);
 
 			// Gather the text of any error elements within the fragment…
 			const errors = [...frag.querySelectorAll('.error')]
@@ -349,6 +350,30 @@
 			return this;
 		},
 
+		/**
+		 * subwiki when run with a passage data
+		 */
+		wikify(options, source, title) {
+			// Wikify the content sources into a fragment.
+			const frag = document.createDocumentFragment();
+			new Wikifier(frag, source, options, title);
+			// console.log('jQuery.wikify:',frag);
+
+			// Gather the text of any error elements within the fragment…
+			const errors = [...frag.querySelectorAll('.error')]
+				.map(errEl => errEl.textContent.replace(errorPrologRegExp, ''));
+				
+			// Append the fragment to the target element(s).
+			this.append(frag);
+
+			// …and throw an exception, if there were any errors.
+			if (errors.length > 0) {
+				throw new Error(errors.join('; '));
+			}
+
+			// Return `this` for further chaining.
+			return this;
+		},
 		/*
 			Extend jQuery's chainable methods with a `wiki()` method.
 		*/

@@ -83,6 +83,7 @@ function _createPadString(length, padding) {
 	return padString;
 }
 
+const _nativeMathRandom = Math.random;
 /***************************************************
 	Polyfills.
 ***************************************************/
@@ -701,6 +702,46 @@ Object.defineProperty(Array.prototype, 'has', {
 		return count;
 	},
 });
+// swap two elements in an array
+Object.defineProperty(Array.prototype, 'swap', {
+	configurable: true,
+	writable: true,
+	value(index, index2) {
+		if (this == null) {
+			throw new TypeError('Array.prototype.swap called on null or undefined');
+		}
+
+		if (index < 0 || index >= this.length) return this;
+		if (index2 < 0 || index2 >= this.length) return this;
+
+		const temp = this[index];
+		this[index] = this[index2];
+		this[index2] = temp;
+
+		return this;
+	},
+});
+
+
+// move an element by given steps in an array
+Object.defineProperty(Array.prototype, 'move', {
+	configurable: true,
+	writable: true,
+	value(index, steps) {
+		if (this == null) {
+			throw new TypeError('Array.prototype.shiftNum called on null or undefined');
+		}
+
+		if (index < 0 || index >= this.length) return this;
+
+		const temp = this[index];
+		this.splice(index, 1);
+		this.splice(index + steps, 0, temp);
+
+		return this;
+	},
+});
+
 
 /**
  * @description

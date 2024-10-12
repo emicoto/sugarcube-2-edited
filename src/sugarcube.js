@@ -198,25 +198,28 @@ jQuery(() => {
 		// Initialize the macros.
 		Macro.init();
 
-		// Start the engine (should be done as late as possible, but before interface startup).
-		Engine.start();
-
-		// Initialize the debug bar interface (should be done as late as possible, but before interface startup).
-		if (Config.debug) {
-			DebugBar.init();
-		}
-
-
 		// Set a recurring timer to start the interfaces (necessary due to DOM readiness issues in some browsers).
+
 		const $window    = $(window);
 		const vprCheckId = setInterval(() => {
-			// If `$window.width()` returns a zero value, bail out and wait.
-			if (!$window.width()) {
+			// if need wait before finish script initializing
+			if (window.sc2waitflag === true) {
 				return;
 			}
 
-			// if need wait before finish script initializing
-			if (Config.waitOnLoad === true) {
+			// Start the engine (should be done as late as possible, but before interface startup).
+			if (!Engine.isReady) {
+				Engine.start();
+
+				// eslint-disable-next-line max-len
+				// Initialize the debug bar interface (should be done as late as possible, but before interface startup).
+				if (Config.debug) {
+					DebugBar.init();
+				}
+			}
+
+			// If `$window.width()` returns a zero value, bail out and wait.
+			if (!$window.width()) {
 				return;
 			}
 

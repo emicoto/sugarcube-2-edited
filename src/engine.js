@@ -29,6 +29,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 
 	// Current state of the engine (default: `Engine.States.Idle`).
 	let _state = States.Idle;
+	let _ready = false;
 
 	// Last time `enginePlay()` was called (in milliseconds).
 	let _lastPlay = null;
@@ -248,6 +249,8 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 			}
 		}
 
+		_ready = true;
+
 		// Sanity checks.
 		if (Config.passages.start == null) { // lazy equality for null
 			throw new Error('starting passage not selected');
@@ -444,6 +447,8 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		// Debug view setup.
 		let passageReadyOutput;
 		let passageDoneOutput;
+		let passagePretaskOutput;
+		let passagePostfixOutput;
 
 
 		// pre-passage events. mostly use on between last passage and this passage
@@ -563,17 +568,33 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 			content : passageEl,
 			passage
 		});
-		
+
+		// excute the Pretask passage if exists
+		let Pretask = `${passage.title}::Pretask`;
+		if (!Story.has(Pretask) && Story.has(`${passage.title} ::Pretask`)) {
+			Pretask = `${passage.title} ::Pretask`;
+		}
+		if (Story.has(Pretask)) {
+			try {
+				passagePretaskOutput = Wikifier.wikifyEval(Story.get(Pretask).text);
+			}
+			catch (ex) {
+				console.error(ex);
+				Alert.error(Pretask, ex.message);
+			}
+		}
+
 		Object.keys(prerender).forEach(task => {
 			if (typeof prerender[task] === 'function') {
 				prerender[task].call(passage, passageEl, task);
 			}
 		});
-
+		
 		// Render the `PassageHeader` passage, if it exists, into the passage element.
 		if (Story.has('PassageHeader')) {
 			new Wikifier(passageEl, Story.get('PassageHeader').processText(), 'PassageHeader');
 		}
+
 
 		// Render the passage into its element.
 		passageEl.appendChild(passage.render());
@@ -582,6 +603,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		if (Story.has('PassageFooter')) {
 			new Wikifier(passageEl, Story.get('PassageFooter').processText(), 'PassageFooter');
 		}
+
 
 		// Execute post-render events and tasks.
 		jQuery.event.trigger({
@@ -668,6 +690,21 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		// Update the engine state.
 		_state = States.Playing;
 
+		// excute the postfix passage if exists
+		let postfix = `${passage.title}::Postfix`;
+		if (!Story.has(postfix) && Story.has(`${passage.title} ::Postfix`)) {
+			postfix = `${passage.title} ::Postfix`;
+		}
+		if (Story.has(postfix)) {
+			try {
+				passagePostfixOutput = Wikifier.wikifyEval(Story.get(postfix).text);
+			}
+			catch (ex) {
+				console.error(ex);
+				Alert.error(postfix, ex.message);
+			}
+		}
+
 		// Execute post-display events, tasks, and the `PassageDone` special passage.
 		if (Story.has('PassageDone')) {
 			try {
@@ -678,6 +715,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 				Alert.error('PassageDone', ex.message);
 			}
 		}
+
 
 		jQuery.event.trigger({
 			type    : ':passagedisplay',
@@ -730,6 +768,30 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 				);
 				debugView.modes({ hidden : true });
 				debugView.append(passageDoneOutput);
+				jQuery(passageEl).append(debugView.output);
+			}
+
+			if (passagePretaskOutput != null) { // lazy equality for null
+				debugView = new DebugView(
+					document.createDocumentFragment(),
+					'special',
+					'Pretask',
+					'Pretask'
+				);
+				debugView.modes({ hidden : true });
+				debugView.append(passagePretaskOutput);
+				jQuery(passageEl).prepend(debugView.output);
+			}
+
+			if (passagePostfixOutput != null) { // lazy equality for null
+				debugView = new DebugView(
+					document.createDocumentFragment(),
+					'special',
+					'Postfix',
+					'Postfix'
+				);
+				debugView.modes({ hidden : true });
+				debugView.append(passagePostfixOutput);
 				jQuery(passageEl).append(debugView.output);
 			}
 
@@ -860,6 +922,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		/*
 			Legacy Functions.
 		*/
-		display : { value : engineDisplay }
+		display : { value : engineDisplay },
+		isReady : { get : () => _ready }
 	}));
 })();

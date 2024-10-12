@@ -55,10 +55,9 @@ var Config = (() => { // eslint-disable-line no-unused-vars, no-var
 	let _uiStowBarInitially    = 800;
 	let _uiUpdateStoryElements = true;
 
-	// NodeJS settings && plus setting
-	let _nodejs = false; // if true, then we are running in node environment
-	let _savePath = './appdata/saves'; // path to save file
-	let _waitOnLoad = false; // if true, will wait on loading circle until ready signal
+	// NodeJS settings && plus settings
+	let _savePath = './sav/'; // path to save file
+	let _maxErrorLogs = 100; // maximum number of error logs to keep
    
 	/*******************************************************************************
 		Error Constants.
@@ -86,23 +85,12 @@ var Config = (() => { // eslint-disable-line no-unused-vars, no-var
 		get debug() { return _debug; },
 		set debug(value) { _debug = Boolean(value); },
 
-		get nodejs() { return _nodejs; },
-		set nodejs(value) { _nodejs = Boolean(value);},
-
-
 		get savePath() {
 			return _savePath;
 		 },
 		 set savePath(value) {
 			_savePath = String(value);
 		 },
-		
-		get waitOnLoad() {
-			return _waitOnLoad;
-		},
-		set waitOnLoad(value) {
-			_waitOnLoad = Boolean(value);
-		},
 
 		get addVisitedLinkClass() { return _addVisitedLinkClass; },
 		set addVisitedLinkClass(value) { _addVisitedLinkClass = Boolean(value); },
@@ -117,6 +105,14 @@ var Config = (() => { // eslint-disable-line no-unused-vars, no-var
 			}
 
 			_loadDelay = value;
+		},
+
+		get maxErrorLogs() {
+			return _maxErrorLogs;
+		},
+
+		set maxErrorLogs(value) {
+			_maxErrorLogs = value;
 		},
 
 		/*
