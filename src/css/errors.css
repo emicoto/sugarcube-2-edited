@@ -80,32 +80,23 @@ div#error-report-footer {
 	flex-direction: row;
 }
 
-.error-clear-button {
-    position: absolute;
-    right: 0px;
+.error-button {
     font-size: 12px;
     padding: 4px 2px;
     border: 1px solid #dbe2e2;
+    margin-right: 5px;
 }
 
-.error-clear-button:hover {
+.error-button:hover {
     background: aliceblue;
     color: gray;
     cursor: pointer;
 }
 
-.error-copy-button {
-    position: absolute;
-    right:  50px;
-    font-size: 12px;
-    padding: 4px 2px;
-    border: 1px solid #dbe2e2;
-}
-
-.error-copy-button:hover {
-    background: aliceblue;
-    color: gray;
-    cursor: pointer;
+.error-button-list {
+    right: 0;
+    display: flex;
+    flex-direction: row-reverse;
 }
 
 .error-report-footer-text {

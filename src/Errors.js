@@ -17,7 +17,7 @@
 var Errors = (() => {
 	'use strict';
 
-	let _footertext = 'Please report any errors to the devs.';
+	let _footertext = 'Please report the errors to the devs.';
 
 	const reporter = {
 		logs : [],
@@ -39,6 +39,24 @@ var Errors = (() => {
 			el.select();
 			document.execCommand('copy');
 			document.body.removeChild(el);
+			return text;
+		},
+
+		print() {
+			// print all logs to console
+			const text = this.copyAll();
+			console.log(text);
+		},
+
+		export() {
+			// export all logs to a file
+			const text = this.copyAll();
+			const blob = new Blob([text], { type: 'text/plain' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'error-report.txt';
+			a.click();
 		},
 
 		show(selector) {
@@ -116,8 +134,12 @@ var Errors = (() => {
 			</div>
 			<div id="error-report-footer">
 				<div class="error-report-footer-text">${_footertext}</div>
-				<div class="error-clear-button" onClick="Errors.reporter.clear()">Clear</div>
-				<div class="error-copy-button" onClick="Errors.reporter.copyAll()">Copy</div>
+			</div>
+			<div class="error-button-list">
+				<div class="error-button" onClick="Errors.reporter.clear()">Clear</div>
+				<div class="error-button" onClick="Errors.reporter.export()">Export</div>
+				<div class="error-button" onClick="Errors.reporter.print()">Print</div>
+				<div class="error-button" onClick="Errors.reporter.copyAll()">Copy</div>
 			</div>
 		`;
 		document.body.appendChild(elment);

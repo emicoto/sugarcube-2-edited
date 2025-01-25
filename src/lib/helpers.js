@@ -6,7 +6,7 @@
 	Use of this source code is governed by a BSD 2-clause "Simplified" License, which may be found in the LICENSE file.
 
 ***********************************************************************************************************************/
-/* global Config, L10n, State, Story, Util, Wikifier, Errors */
+/* global Config, L10n, State, Story, Util, Wikifier, Errors, Stacks */
 
 var { // eslint-disable-line no-var
 	/* eslint-disable no-unused-vars */
@@ -221,15 +221,16 @@ var { // eslint-disable-line no-var
 		const $source  = jQuery(document.createElement('pre'));
 
 		const digest = message.replace(/\n/g, ' ').slice(0, 80);
-		const mesg     = `${L10n.get('errorTitle')}: ${message || 'unknown error'}`;
+		const version = Config.saves.version ? ` (${Config.saves.version})` : '';
+		const mesg     = `${L10n.get('errorTitle')}: ${message || 'unknown error'}${version}`;
 
 		console.warn(`${mesg}\n\t${source.replace(/\n/g, '\n\t')}`, metadata);
 
 		if (logged) {
-			Errors.report(mesg, source, metadata);
+			Errors.report(message, source, metadata);
 			jQuery(document.createElement('span'))
 				.addClass('error')
-				.text(`Error: ${digest}${Config.saves.version ? ` (${Config.saves.version})` : ''}`)
+				.text(`Error: ${digest}${version}`)
 				.appendTo($wrapper);
 
 			$wrapper
@@ -259,7 +260,7 @@ var { // eslint-disable-line no-var
 			.appendTo($wrapper);
 		jQuery(document.createElement('span'))
 			.addClass('error')
-			.text(mesg)
+			.text(`${mesg}(:: ${Stacks.passage.last()})`)
 			.appendTo($wrapper);
 		jQuery(document.createElement('code'))
 			.text(source)

@@ -50,6 +50,10 @@ var Stacks = (() => {
 		return _stacks.pop();
 	}
 
+	function _getLastPassage() {
+		return _passages[_passages.length - 1];
+	}
+
 	function _setStackType(index, errorType) {
 		const text = _stacks[index].split(' : ')[0];
 		_stacks[index] = `${text} : ${errorType}`;
@@ -81,7 +85,8 @@ var Stacks = (() => {
 		passage : {
 			get  : () => _passages,
 			push : _pushPassage,
-			pop  : _popPassage
+			pop  : _popPassage,
+			last : _getLastPassage
 		}
 	});
 })();

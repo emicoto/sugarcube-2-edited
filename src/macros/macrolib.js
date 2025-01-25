@@ -83,14 +83,16 @@
 
 		handler() {
 			if (this.args.full.length === 0) {
-				return this.error('no expression specified');
+				return this.error('no expression specified', undefined);
 			}
 
 			try {
 				Scripting.evalJavaScript(this.args.full);
 			}
 			catch (ex) {
-				return this.error(`bad evaluation: ${typeof ex === 'object' ? ex.message : ex}`);
+				return this.error(
+					`bad evaluation: ${typeof ex === 'object' ? ex.message : ex}`
+				);
 			}
 
 			// Custom debug view setup.
@@ -293,7 +295,7 @@
 			}
 
 			if (!Story.has(subPsg)) {
-				return throwError(
+				return this.error(
 					this.output,
 					`Unable to execute included passage ${subPsg}, passage "${subPsg}" does not exist`,
 					`<<include ${subPsg}>>`,
@@ -301,7 +303,7 @@
 						offender : subPsg,
 						origin   : mainPsg
 					},
-					true
+					false
 				);
 			}
 
@@ -829,7 +831,7 @@
 				}
 			}
 			catch (ex) {
-				return this.error(`bad conditional expression in <<${i === 0 ? 'if' : 'elseif'}>> clause${i > 0 ? ' (#' + i + ')' : ''}: ${typeof ex === 'object' ? ex.message : ex}`); // eslint-disable-line prefer-template
+				return this.error(`bad conditional expression in <<${i === 0 ? 'if' : 'elseif'}>> clause${i > 0 ? ' (#' + i + ')' : ''}: ${typeof ex === 'object' ? ex.message : ex} @ expression (${this.payload[i].args.full})`); // eslint-disable-line prefer-template
 			}
 		}
 	});
@@ -882,7 +884,7 @@
 				result = Scripting.evalJavaScript(this.args.full);
 			}
 			catch (ex) {
-				return this.error(`bad evaluation: ${typeof ex === 'object' ? ex.message : ex}`);
+				return this.error(`bad evaluation: ${typeof ex === 'object' ? ex.message : ex} @ expression (${this.args.full})`);
 			}
 
 			const debugView = this.debugView; // cache it now, to be modified later
@@ -1053,7 +1055,7 @@
 						evalJavaScript(init);
 					}
 					catch (ex) {
-						return this.error(`bad init expression: ${typeof ex === 'object' ? ex.message : ex}`);
+						return this.error(`bad init expression: ${typeof ex === 'object' ? ex.message : ex} @ expression (${init})`);
 					}
 				}
 
@@ -1085,13 +1087,13 @@
 							evalJavaScript(post);
 						}
 						catch (ex) {
-							return this.error(`bad post expression: ${typeof ex === 'object' ? ex.message : ex}`);
+							return this.error(`bad post expression: ${typeof ex === 'object' ? ex.message : ex} @ expression (${post})`);
 						}
 					}
 				}
 			}
 			catch (ex) {
-				return this.error(`bad conditional expression: ${typeof ex === 'object' ? ex.message : ex}`);
+				return this.error(`bad conditional expression: ${typeof ex === 'object' ? ex.message : ex} @ expression (${condition})`);
 			}
 			finally {
 				TempState.break = null;
@@ -3647,18 +3649,19 @@
 								}
 								else {
 									return this.error(
-										'errors were detected in the widget code',
+										'errors were detected in the widget code.',
 										resFrag.textContent.trim(),
 										{
-											passage : macroThis.passageTitle,
-											macro   : macroThis,
-											errors  : errList
-										}
+											sourcepassage : macroThis.passageObj.title,
+											macro         : macroThis,
+											errors        : errList
+										},
+										false
 									);
 								}
 							}
 							catch (ex) {
-								return throwError(
+								return this.error(
 									this.output,
 									`macro cannot execute widget ${widgetName}: ${ex.message}`,
 									`<<${widgetName}>>`,
@@ -3667,8 +3670,7 @@
 										content : widgetCode,
 										passage : macroThis.passageTitle,
 										macro   : macroThis
-									},
-									true
+									}
 								);
 							}
 							finally {
