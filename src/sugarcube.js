@@ -8,7 +8,7 @@
 ***********************************************************************************************************************/
 /*
 	global Alert, Browser, Config, Dialog, Engine, Fullscreen, Has, LoadScreen, SimpleStore, L10n, Macro, Passage,
-	Errors
+	Errors, Stacks
 	Save, Scripting, Setting, SimpleAudio, State, Story, UI, UIBar, DebugBar, Util, Visibility, Wikifier, idb
 */
 /* eslint-disable no-var */
@@ -163,9 +163,12 @@ jQuery(() => {
 				storage,
 				version,
 				idb,
-				Errors
+				Errors,
+				Stacks
 			}))
 		});
+		
+		Object.defineProperty(window, 'Errors', { value : Errors });
 
 		// Initialize the user interface (must be done before story initialization, specifically before scripts).
 		Dialog.init();

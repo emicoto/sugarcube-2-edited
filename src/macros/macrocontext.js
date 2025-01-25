@@ -287,8 +287,8 @@ var MacroContext = (() => { // eslint-disable-line no-unused-vars, no-var
 			this._debugViewEnabled = false;
 		}
 
-		error(message, source) {
-			return throwError(this._output, `<<${this.displayName}>>: ${message}`, source ? source : this.source);
+		error(message, source, metadata) {
+			return throwError(this._output, `<<${this.displayName}>>: ${message}`, source ? source : this.source, metadata ? metadata : null);
 		}
 	}
 

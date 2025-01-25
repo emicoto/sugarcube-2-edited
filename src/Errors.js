@@ -3,14 +3,14 @@
 
 /***********************************************************************************************************************
 
-	engine.js
+	Errors.js
 
-	Copyright © 2013–2021 Thomas Michael Edwards <thomasmedwards@gmail.com>. All rights reserved.
+	Copyright © 2024-2025 Lunefox All rights reserved.
 	Use of this source code is governed by a BSD 2-clause "Simplified" License, which may be found in the LICENSE file.
 
 ***********************************************************************************************************************/
 /*
-	global Config
+	global Config, Stacks
 */
 
 // eslint-disable-next-line no-var
@@ -66,10 +66,10 @@ var Errors = (() => {
 		},
 
 		update() {
-			const el = document.getElementById('error-report-box');
-			el.querySelector('.error-report-logs').innerHTML = '';
+			const $el = document.getElementById('error-report-box');
+			$el.querySelector('.error-report-logs').innerHTML = '';
 			this.logs.forEach(logdata => {
-				drawLog(logdata);
+				drawLog($el, logdata);
 			});
 		}
 	};
@@ -95,6 +95,13 @@ var Errors = (() => {
 		}
 	}
 
+	function destroyErrorBox() {
+		const el = document.getElementById('error-report-box');
+		if (el) {
+			el.parentNode.removeChild(el);
+		}
+	}
+
 	function drawView() {
 		const elment = document.createElement('div');
 		elment.id = 'error-report-box';
@@ -113,7 +120,7 @@ var Errors = (() => {
 				<div class="error-copy-button" onClick="Errors.reporter.copyAll()">Copy</div>
 			</div>
 		`;
-		document.getElementById('story-main').appendChild(elment);
+		document.body.appendChild(elment);
 		$(elment).draggable({ handle : '#error-report-title' });
 	}
 	
@@ -128,19 +135,36 @@ var Errors = (() => {
 		}).replace(/([,:;])/g, '$1 '); // add spaces after commas, colons, and semicolons
 	}
 
-	function drawLog(logdata) {
-		const log = document.createElement('div');
-		log.className = 'error-report-log';
-		log.innerHTML = `
+	function drawLog(el, logdata) {
+		const $log = jQuery(document.createElement('div'));
+		// excape all < > to prevent html injection
+		const content = logdata.message.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace('/n', '<br>');
+		const digest = content.replace(/\n/g, ' ').slice(0, 80);
+		const details = [
+			`${content}`,
+			`${Stacks.listup()}`
+		];
+
+		if (logdata.source) {
+			const source = logdata.source.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace('/n', '<br>');
+			details.push(`[source]\n${source}`);
+		}
+
+		if (logdata.data) {
+			details.push(`[metadata]\n${formatErrorObj(logdata.data)}`);
+		}
+
+		$log.addClass('error-report-log');
+		$log.html(`
 		<div class="error-log-banner">	
-			<div class="error-log-message" onClick="Errors.reporter.show(this)" title="click to show detials"><span class="error-log-showdetail">▶</span>${logdata.message}</div>
+			<div class="error-log-message" onClick="Errors.reporter.show(this)" title="click to show detials"><span class="error-log-showdetail">▶</span>${digest}</div>
 		</div>
 		<div class="error-log-detail hidden">
-			<textarea class="error-log-entry" readonly onClick="Errors.reporter.copy(this)">${logdata.message}\nsources:\n${logdata.source}\n\nstackdata:\n${formatErrorObj(logdata.data)}</textarea>
+			<textarea class="error-log-entry" readonly onClick="Errors.reporter.copy(this)">${details.join('\n')}</textarea>
 		</div>
-		`;
+		`);
 
-		document.querySelector('.error-report-logs').appendChild(log);
+		jQuery(el).find('.error-report-logs').append($log);
 	}
 
 
@@ -199,7 +223,8 @@ var Errors = (() => {
 		report,
 		drawView,
 		drawLog,
-		pop  : popErrorBox,
-		hide : hideErrorBox
+		pop     : popErrorBox,
+		hide    : hideErrorBox,
+		destroy : destroyErrorBox
 	});
 })();

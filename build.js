@@ -53,6 +53,7 @@ const CONFIG = {
 			'src/macros/macrocontext.js',
 			'src/macros/macrolib.js',
 			'src/Errors.js',
+			'src/Stacks.js',
 			'src/dialog.js',
 			'src/engine.js',
 			'src/passage.js',
@@ -86,7 +87,8 @@ const CONFIG = {
 			'src/css/ui-bar.css',
 			'src/css/ui-debug.css',
 			'src/css/errors.css',
-			'src/css/general.css'
+			'src/css/general.css',
+			'src/css/jquery-ui.min.css'
 		]
 	},
 	libs : [
@@ -95,6 +97,7 @@ const CONFIG = {
 		'src/vendor/es5-shim.min.js',
 		'src/vendor/es6-shim.min.js',
 		'src/vendor/jquery.min.js',
+		'src/vendor/jquery-ui.min.js',
 		'src/vendor/jquery.ba-throttle-debounce.min.js',
 		'src/vendor/imagesloaded.pkgd.min.js',
 		'src/vendor/lz-string.min.js',

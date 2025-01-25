@@ -6,7 +6,7 @@
 	Use of this source code is governed by a BSD 2-clause "Simplified" License, which may be found in the LICENSE file.
 
 ***********************************************************************************************************************/
-/* global Patterns, Scripting, macros, State, Wikifier */
+/* global Patterns, Scripting, macros, State, Wikifier, throwError, Stacks */
 
 var Macro = (() => { // eslint-disable-line no-unused-vars, no-var
 	'use strict';
@@ -245,7 +245,18 @@ var Macro = (() => { // eslint-disable-line no-unused-vars, no-var
 					}
 				}
 				catch (error) {
-					throw new Error(`Error in macro <<${macroName}>>: ${error.message}`);
+					return throwError(
+						this.output,
+						`Error in macro <<${macroName}>>: ${error.message}`,
+						`<<${macroName}>>`,
+						{
+							args    : this.args,
+							content : this.content,
+							payload : this.payload,
+							stack   : error.stack
+						},
+						true
+					);
 				}
 			}
 		});

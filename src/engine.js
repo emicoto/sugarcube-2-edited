@@ -7,7 +7,7 @@
 
 ***********************************************************************************************************************/
 /*
-	global Alert, Config, DebugView, Dialog, Has, LoadScreen, Save, State, Story, StyleWrapper, UI, UIBar, Util,
+	global Alert, Config, DebugView, Dialog, Has, LoadScreen, Save, State, Story, StyleWrapper, UI, UIBar, Util, Stacks,
 	Wikifier, postdisplay, postrender, predisplay, prehistory, prerender, setDisplayTitle, prepassage
 */
 
@@ -447,14 +447,16 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		// Debug view setup.
 		let passageReadyOutput;
 		let passageDoneOutput;
-		let passagePretaskOutput;
-		let passagePostfixOutput;
-
 
 		// pre-passage events. mostly use on between last passage and this passage
 		Object.keys(prepassage).forEach(task => {
 			if (typeof prepassage[task] === 'function') {
-				prepassage[task].call(_session, task);
+				try {
+					prepassage[task].call(_session, task);
+				}
+				catch (ex) {
+					console.error(`Error occured before play passage ${_session.title} prepassage.${task}`, ex, _session);
+				}
 			}
 		});
 
@@ -464,7 +466,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		// Reset the temporary state and variables objects.
 		TempState = {}; // eslint-disable-line no-undef
 		State.clearTemporary();
-
+		Stacks.clear();
 
 		// Execute the navigation override callback.
 		if (typeof Config.navigation.override === 'function') {
@@ -492,7 +494,12 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 
 		Object.keys(prehistory).forEach(task => {
 			if (typeof prehistory[task] === 'function') {
-				prehistory[task].call(_session, task);
+				try {
+					prehistory[task].call(_session, task);
+				}
+				catch (ex) {
+					console.error(`Error occured before play passage ${_session.title} prehistory.${task}`, ex, _session);
+				}
 			}
 		});
 
@@ -501,10 +508,12 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		
 		// should not change the passage anymore after prehistory events
 		const passage = _session.passage;
-
+		// Save to temporary state.
+		// eslint-disable-next-line camelcase
+		State.temporary.passage_session = _session;
 
 		// Create a new entry in the history.
-		if (!noHistory && !passage.tags.includes('system')) {
+		if (!noHistory && !passage.tags.includes('noHistory')) {
 			State.create(passage.title);
 		}
 
@@ -523,17 +532,26 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		// Execute pre-display tasks and the `PassageReady` special passage.
 		Object.keys(predisplay).forEach(task => {
 			if (typeof predisplay[task] === 'function') {
-				predisplay[task].call(passage, task);
+				try {
+					predisplay[task].call(passage, task);
+				}
+				catch (ex) {
+					console.error(`Error occured before play passage ${_session.title} predisplay.${task}`, ex, _session);
+				}
 			}
 		});
 
 		if (Story.has('PassageReady')) {
 			try {
+				Stacks.passage.push('PassageReady');
 				passageReadyOutput = Wikifier.wikifyEval(Story.get('PassageReady').text);
 			}
 			catch (ex) {
 				console.error(ex);
-				Alert.error('PassageReady', ex.message);
+				Alert.error('PassageReady', _session.title, ex.message);
+			}
+			finally {
+				Stacks.passage.pop();
 			}
 		}
 
@@ -569,39 +587,33 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 			passage
 		});
 
-		// excute the Pretask passage if exists
-		let Pretask = `${passage.title}::Pretask`;
-		if (!Story.has(Pretask) && Story.has(`${passage.title} ::Pretask`)) {
-			Pretask = `${passage.title} ::Pretask`;
-		}
-		if (Story.has(Pretask)) {
-			try {
-				passagePretaskOutput = Wikifier.wikifyEval(Story.get(Pretask).text);
-			}
-			catch (ex) {
-				console.error(ex);
-				Alert.error(Pretask, ex.message);
-			}
-		}
-
 		Object.keys(prerender).forEach(task => {
 			if (typeof prerender[task] === 'function') {
-				prerender[task].call(passage, passageEl, task);
+				try {
+					prerender[task].call(passage, passageEl, task);
+				}
+				catch (ex) {
+					console.error(`Error occured before play passage ${passage.title} prerender.${task}`, ex, passage, passageEl);
+				}
 			}
 		});
 		
 		// Render the `PassageHeader` passage, if it exists, into the passage element.
 		if (Story.has('PassageHeader')) {
+			Stacks.passage.push('PassageHeader');
 			new Wikifier(passageEl, Story.get('PassageHeader').processText(), 'PassageHeader');
+			Stacks.passage.pop();
 		}
 
-
+		Stacks.passage.push(passage.title);
 		// Render the passage into its element.
 		passageEl.appendChild(passage.render());
 
 		// Render the `PassageFooter` passage, if it exists, into the passage element.
 		if (Story.has('PassageFooter')) {
+			Stacks.passage.push('PassageFooter');
 			new Wikifier(passageEl, Story.get('PassageFooter').processText(), 'PassageFooter');
+			Stacks.passage.pop();
 		}
 
 
@@ -613,7 +625,12 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		});
 		Object.keys(postrender).forEach(task => {
 			if (typeof postrender[task] === 'function') {
-				postrender[task].call(passage, passageEl, task);
+				try {
+					postrender[task].call(passage, passageEl, task);
+				}
+				catch (ex) {
+					console.error(`Error occured before play passage ${passage.title} postrender.${task}`, ex, passage, passageEl);
+				}
 			}
 		});
 
@@ -690,29 +707,18 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 		// Update the engine state.
 		_state = States.Playing;
 
-		// excute the postfix passage if exists
-		let postfix = `${passage.title}::Postfix`;
-		if (!Story.has(postfix) && Story.has(`${passage.title} ::Postfix`)) {
-			postfix = `${passage.title} ::Postfix`;
-		}
-		if (Story.has(postfix)) {
-			try {
-				passagePostfixOutput = Wikifier.wikifyEval(Story.get(postfix).text);
-			}
-			catch (ex) {
-				console.error(ex);
-				Alert.error(postfix, ex.message);
-			}
-		}
-
 		// Execute post-display events, tasks, and the `PassageDone` special passage.
 		if (Story.has('PassageDone')) {
 			try {
+				Stacks.passage.push('PassageDone');
 				passageDoneOutput = Wikifier.wikifyEval(Story.get('PassageDone').text);
 			}
 			catch (ex) {
 				console.error(ex);
-				Alert.error('PassageDone', ex.message);
+				Alert.error('PassageDone', passage.title, ex.message);
+			}
+			finally {
+				Stacks.passage.pop();
 			}
 		}
 
@@ -725,7 +731,12 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 
 		Object.keys(postdisplay).forEach(task => {
 			if (typeof postdisplay[task] === 'function') {
-				postdisplay[task].call(passage, task);
+				try {
+					postdisplay[task].call(passage, task);
+				}
+				catch (ex) {
+					console.error(`Error occured before play passage ${_session.title} postdisplay.${task}`, ex	, _session);
+				}
 			}
 		});
 
@@ -768,30 +779,6 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 				);
 				debugView.modes({ hidden : true });
 				debugView.append(passageDoneOutput);
-				jQuery(passageEl).append(debugView.output);
-			}
-
-			if (passagePretaskOutput != null) { // lazy equality for null
-				debugView = new DebugView(
-					document.createDocumentFragment(),
-					'special',
-					'Pretask',
-					'Pretask'
-				);
-				debugView.modes({ hidden : true });
-				debugView.append(passagePretaskOutput);
-				jQuery(passageEl).prepend(debugView.output);
-			}
-
-			if (passagePostfixOutput != null) { // lazy equality for null
-				debugView = new DebugView(
-					document.createDocumentFragment(),
-					'special',
-					'Postfix',
-					'Postfix'
-				);
-				debugView.modes({ hidden : true });
-				debugView.append(passagePostfixOutput);
 				jQuery(passageEl).append(debugView.output);
 			}
 

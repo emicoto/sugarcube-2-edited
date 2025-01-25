@@ -487,6 +487,12 @@ var Scripting = (() => { // eslint-disable-line no-unused-vars, no-var
 		return count;
 	}
 
+	Object.defineProperties(window, {
+		getCurPassage  : { value : passage },
+		getPrevPassage : { value : previous },
+		getPsgTags     : { value : tags }
+	});
+
 	/* eslint-enable no-unused-vars */
 
 

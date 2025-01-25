@@ -8,7 +8,7 @@
 ***********************************************************************************************************************/
 /*
 	global Config, DebugView, EOF, Engine, Lexer, Macro, MacroContext, Patterns, Scripting, State, Story, Template,
-	       Wikifier, stringFrom, throwError
+	       Wikifier, stringFrom, throwError, Stacks
 */
 /* eslint "no-param-reassign": [ 2, { "props" : false } ] */
 
@@ -120,7 +120,6 @@
 
 		handler(w) {
 			const matchStart = this.lookahead.lastIndex = w.matchStart;
-
 			if (this.parseTag(w)) {
 				/*
 					If `parseBody()` is called below, it will modify the current working
@@ -130,10 +129,10 @@
 				const name      = this.working.name;
 				const rawArgs   = this.working.arguments;
 				let macro;
+				const stackId = Stacks.add(name);
 
 				try {
 					macro = Macro.get(name);
-
 					if (macro) {
 						let payload = null;
 
@@ -142,10 +141,13 @@
 
 							if (!payload) {
 								w.nextMatch = nextMatch; // we must reset `w.nextMatch` here, as `parseBody()` modifies it
+								Stacks.set(stackId, 'missing closing tag');
 								return throwError(
 									w.output,
 									`cannot find a closing tag for macro <<${name}>>`,
-									`${w.source.slice(matchStart, w.nextMatch)}\u2026`
+									`${w.source.slice(matchStart, w.nextMatch)}\u2026`,
+									undefined,
+									true
 								);
 							}
 						}
@@ -226,26 +228,35 @@
 							}
 						}
 						else {
+							Stacks.set(stackId, 'handler not a function');
 							return throwError(
 								w.output,
 								`macro <<${name}>> handler function ${typeof macro.handler === 'undefined' ? 'does not exist' : 'is not a function'}`,
-								w.source.slice(matchStart, w.nextMatch)
+								w.source.slice(matchStart, w.nextMatch),
+								macro,
+								true
 							);
 						}
 					}
 					else if (Macro.tags.has(name)) {
 						const tags = Macro.tags.get(name);
+						Stacks.set(stackId, 'tag found outside of macro');
 						return throwError(
 							w.output,
 							`child tag <<${name}>> was found outside of a call to its parent macro${tags.length === 1 ? '' : 's'} <<${tags.join('>>, <<')}>>`,
-							w.source.slice(matchStart, w.nextMatch)
+							w.source.slice(matchStart, w.nextMatch),
+							undefined,
+							true
 						);
 					}
 					else {
+						Stacks.set(stackId, 'not found');
 						return throwError(
 							w.output,
 							`macro <<${name}>> does not exist`,
-							w.source.slice(matchStart, w.nextMatch)
+							w.source.slice(matchStart, w.nextMatch),
+							undefined,
+							true
 						);
 					}
 				}
@@ -253,7 +264,9 @@
 					return throwError(
 						w.output,
 						`cannot execute ${macro && macro.isWidget ? 'widget' : 'macro'} <<${name}>>: ${ex.message}`,
-						w.source.slice(matchStart, w.nextMatch)
+						w.source.slice(matchStart, w.nextMatch),
+						undefined,
+						true
 					);
 				}
 				finally {
@@ -261,6 +274,7 @@
 					this.working.name      = '';
 					this.working.arguments = '';
 					this.working.index     = 0;
+					Stacks.delete(stackId);
 				}
 			}
 			else {

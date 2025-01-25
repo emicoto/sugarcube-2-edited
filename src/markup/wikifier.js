@@ -8,7 +8,7 @@
 ***********************************************************************************************************************/
 /*
 	global Config, EOF, Engine, Lexer, Patterns, Scripting, State, Story, TempState, Util, convertBreaks,
-	       errorPrologRegExp, Story
+	       errorPrologRegExp, Story, passage
 */
 
 /*
@@ -36,8 +36,11 @@ var Wikifier = (() => { // eslint-disable-line no-unused-vars, no-var
 			if (passageTitle && passageObj) {
 				_passageObj = passageObj;
 			}
-			else if (passageTitle && Story) {
+			else if (passageTitle) {
 				_passageObj = Story.get(passageTitle);
+			}
+			else if (typeof passage === 'function' && passage()) {
+				_passageObj = Story.get(passage());
 			}
 
 			if (_callDepth === 0) {
@@ -1282,7 +1285,7 @@ function wikifier(_str, ...args) {
 	let output = `<<${_str} `;
 	if (args && args.length > 0) {
 		for (let i = 0; i < args.length; i++) {
-			output += ` ${args[i]}`;
+			output += ` ${JSON.stringify(args[i])}`;
 		}
 	}
 	output += '>>';

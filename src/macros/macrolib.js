@@ -8,7 +8,7 @@
 ***********************************************************************************************************************/
 /*
 	global Config, DebugView, Engine, Has, L10n, Macro, NodeTyper, Patterns, Scripting, SimpleAudio, State,
-	       Story, TempState, Util, Wikifier, postdisplay, prehistory, storage, stringFrom
+	Stacks, Story, TempState, Util, Wikifier, postdisplay, prehistory, storage, stringFrom, throwError, getCurPassage
 */
 
 (() => {
@@ -279,19 +279,30 @@
 				return this.error('no passage specified');
 			}
 
-			let passage;
+			const mainPsg = getCurPassage();
+
+			let subPsg;
 
 			if (typeof this.args[0] === 'object') {
 				// Argument was in wiki link syntax.
-				passage = this.args[0].link;
+				subPsg = this.args[0].link;
 			}
 			else {
 				// Argument was simply the passage name.
-				passage = this.args[0];
+				subPsg = this.args[0];
 			}
 
-			if (!Story.has(passage)) {
-				return this.error(`passage "${passage}" does not exist`);
+			if (!Story.has(subPsg)) {
+				return throwError(
+					this.output,
+					`Unable to execute included passage ${subPsg}, passage "${subPsg}" does not exist`,
+					`<<include ${subPsg}>>`,
+					{
+						offender : subPsg,
+						origin   : mainPsg
+					},
+					true
+				);
 			}
 
 			// Custom debug view setup.
@@ -299,19 +310,23 @@
 				this.debugView.modes({ block : true });
 			}
 
-			passage = Story.get(passage);
+			subPsg = Story.get(subPsg);
 			let $el;
+			Stacks.passage.push(subPsg.title);
 
 			if (this.args[1]) {
 				$el = jQuery(document.createElement(this.args[1]))
-					.addClass(`${passage.domId} macro-${this.name}`)
-					.attr('data-passage', passage.title)
+					.addClass(`${subPsg.domId} macro-${this.name}`)
+					.attr('data-passage', subPsg.title)
 					.appendTo(this.output);
 			}
 			else {
 				$el = jQuery(this.output);
 			}
-			$el.wikify(null, passage.processText(), passage.title);
+
+			$el.wiki(subPsg.processText());
+
+			Stacks.passage.pop();
 		}
 	});
 
@@ -1934,88 +1949,6 @@
 		Links Macros.
 	*******************************************************************************************************************/
 	/*
-		<<actions>>
-	*/
-	Macro.add('actions', {
-		handler() {
-			const $list = jQuery(document.createElement('ul'))
-				.addClass(this.name)
-				.appendTo(this.output);
-
-			for (let i = 0; i < this.args.length; ++i) {
-				let passage;
-				let text;
-				let $image;
-				let setFn;
-
-				if (typeof this.args[i] === 'object') {
-					if (this.args[i].isImage) {
-						// Argument was in wiki image syntax.
-						$image = jQuery(document.createElement('img'))
-							.attr('src', this.args[i].source);
-
-						if (this.args[i].hasOwnProperty('passage')) {
-							$image.attr('data-passage', this.args[i].passage);
-						}
-
-						if (this.args[i].hasOwnProperty('title')) {
-							$image.attr('title', this.args[i].title);
-						}
-
-						if (this.args[i].hasOwnProperty('align')) {
-							$image.attr('align', this.args[i].align);
-						}
-
-						passage = this.args[i].link;
-						setFn   = this.args[i].setFn;
-					}
-					else {
-						// Argument was in wiki link syntax.
-						text    = this.args[i].text;
-						passage = this.args[i].link;
-						setFn   = this.args[i].setFn;
-					}
-				}
-				else {
-					// Argument was simply the passage name.
-					text = passage = this.args[i];
-				}
-
-				if (
-					   State.variables.hasOwnProperty('#actions')
-					&& State.variables['#actions'].hasOwnProperty(passage)
-					&& State.variables['#actions'][passage]
-				) {
-					continue;
-				}
-
-				const $link = jQuery(Wikifier.createInternalLink(
-					jQuery(document.createElement('li')).appendTo($list),
-					passage,
-					null,
-					((passage, fn) => () => {
-						if (!State.variables.hasOwnProperty('#actions')) {
-							State.variables['#actions'] = {};
-						}
-
-						State.variables['#actions'][passage] = true;
-
-						if (typeof fn === 'function') {
-							fn();
-						}
-					})(passage, setFn)
-				))
-					.addClass(`macro-${this.name}`)
-					.append($image || document.createTextNode(text));
-
-				if ($image) {
-					$link.addClass('link-image');
-				}
-			}
-		}
-	});
-
-	/*
 		<<back>> & <<return>>
 	*/
 	Macro.add(['back', 'return'], {
@@ -2155,102 +2088,6 @@
 				.appendTo(this.output);
 		}
 	});
-
-	/*
-		<<choice>>
-	*/
-	Macro.add('choice', {
-		handler() {
-			if (this.args.length === 0) {
-				return this.error('no passage specified');
-			}
-
-			const choiceId = State.passage;
-			let passage;
-			let text;
-			let $image;
-			let setFn;
-
-			if (this.args.length === 1) {
-				if (typeof this.args[0] === 'object') {
-					if (this.args[0].isImage) {
-						// Argument was in wiki image syntax.
-						$image = jQuery(document.createElement('img'))
-							.attr('src', this.args[0].source);
-
-						if (this.args[0].hasOwnProperty('passage')) {
-							$image.attr('data-passage', this.args[0].passage);
-						}
-
-						if (this.args[0].hasOwnProperty('title')) {
-							$image.attr('title', this.args[0].title);
-						}
-
-						if (this.args[0].hasOwnProperty('align')) {
-							$image.attr('align', this.args[0].align);
-						}
-
-						passage = this.args[0].link;
-						setFn   = this.args[0].setFn;
-					}
-					else {
-						// Argument was in wiki link syntax.
-						text    = this.args[0].text;
-						passage = this.args[0].link;
-						setFn   = this.args[0].setFn;
-					}
-				}
-				else {
-					// Argument was simply the passage name.
-					text = passage = this.args[0];
-				}
-			}
-			else {
-				// NOTE: The arguments here are backwards.
-				passage = this.args[0];
-				text    = this.args[1];
-			}
-
-			let $link;
-
-			if (
-				   State.variables.hasOwnProperty('#choice')
-				&& State.variables['#choice'].hasOwnProperty(choiceId)
-				&& State.variables['#choice'][choiceId]
-			) {
-				$link = jQuery(document.createElement('span'))
-					.addClass(`link-disabled macro-${this.name}`)
-					.attr('tabindex', -1)
-					.append($image || document.createTextNode(text))
-					.appendTo(this.output);
-
-				if ($image) {
-					$link.addClass('link-image');
-				}
-
-				return;
-			}
-
-			$link = jQuery(Wikifier.createInternalLink(this.output, passage, null, () => {
-				if (!State.variables.hasOwnProperty('#choice')) {
-					State.variables['#choice'] = {};
-				}
-
-				State.variables['#choice'][choiceId] = true;
-
-				if (typeof setFn === 'function') {
-					setFn();
-				}
-			}))
-				.addClass(`macro-${this.name}`)
-				.append($image || document.createTextNode(text));
-
-			if ($image) {
-				$link.addClass('link-image');
-			}
-		}
-	});
-
 
 	/*******************************************************************************************************************
 		DOM Macros.
@@ -3809,11 +3646,30 @@
 									this.output.appendChild(resFrag);
 								}
 								else {
-									return this.error(`error${errList.length > 1 ? 's' : ''} within widget code (${errList.join('; ')})`);
+									return this.error(
+										'errors were detected in the widget code',
+										resFrag.textContent.trim(),
+										{
+											passage : macroThis.passageTitle,
+											macro   : macroThis,
+											errors  : errList
+										}
+									);
 								}
 							}
 							catch (ex) {
-								return this.error(`cannot execute widget: ${ex.message}`);
+								return throwError(
+									this.output,
+									`macro cannot execute widget ${widgetName}: ${ex.message}`,
+									`<<${widgetName}>>`,
+									{
+										stack   : ex.stack,
+										content : widgetCode,
+										passage : macroThis.passageTitle,
+										macro   : macroThis
+									},
+									true
+								);
 							}
 							finally {
 								// Revert the `_args` variable shadowing.

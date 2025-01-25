@@ -153,6 +153,16 @@
         }
         return res;
     }
+
+	function getPath2(obj, path) {
+		const pathArray = path.split('.');
+		let res = obj;
+		for (const p of pathArray) {
+			if (!res[p]) obj[p] = {};;
+			res = res[p];
+		}
+		return res;
+	}
 	/*
 		Returns a pseudo-random whole number (integer) within the range of the given bounds.
 	*/

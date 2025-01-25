@@ -6,7 +6,7 @@
 	Use of this source code is governed by a BSD 2-clause "Simplified" License, which may be found in the LICENSE file.
 
 ***********************************************************************************************************************/
-/* global Config, L10n, State, Story, Util, Wikifier */
+/* global Config, L10n, State, Story, Util, Wikifier, Errors */
 
 var { // eslint-disable-line no-var
 	/* eslint-disable no-unused-vars */
@@ -215,11 +215,29 @@ var { // eslint-disable-line no-var
 	/*
 		Appends an error view to the passed DOM element.
 	*/
-	function throwError(place, message, source) {
+	function throwError(place, message, source, metadata, logged = false) {
 		const $wrapper = jQuery(document.createElement('div'));
 		const $toggle  = jQuery(document.createElement('button'));
 		const $source  = jQuery(document.createElement('pre'));
+
+		const digest = message.replace(/\n/g, ' ').slice(0, 80);
 		const mesg     = `${L10n.get('errorTitle')}: ${message || 'unknown error'}`;
+
+		console.warn(`${mesg}\n\t${source.replace(/\n/g, '\n\t')}`, metadata);
+
+		if (logged) {
+			Errors.report(mesg, source, metadata);
+			jQuery(document.createElement('span'))
+				.addClass('error')
+				.text(`Error: ${digest}${Config.saves.version ? ` (${Config.saves.version})` : ''}`)
+				.appendTo($wrapper);
+
+			$wrapper
+				.addClass('error-view')
+				.appendTo(place);
+	
+			return false;
+		}
 
 		$toggle
 			.addClass('error-toggle')
@@ -256,8 +274,6 @@ var { // eslint-disable-line no-var
 		$wrapper
 			.addClass('error-view')
 			.appendTo(place);
-
-		console.warn(`${mesg}\n\t${source.replace(/\n/g, '\n\t')}`);
 
 		return false;
 	}

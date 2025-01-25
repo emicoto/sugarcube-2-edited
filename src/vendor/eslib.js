@@ -1750,6 +1750,26 @@ Object.defineProperty(String.prototype, 'toUpperFirst', {
 	},
 });
 
+Object.defineProperty(Array.prototype, 'clear', {
+	configurable: true,
+	writable: true,
+	value() {
+		this.splice(0, this.length);
+		return this;
+	},
+})
+
+Object.defineProperty(Object.prototype, 'clear', {
+	configurable: true,
+	writable: true,
+	value() {
+		Object.keys(this).forEach(key => {
+			delete this[key];
+		});
+		return this;
+	},
+})
+
 /*
 	Returns a copy of the given string with all RegExp metacharacters escaped.
 */
