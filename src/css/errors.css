@@ -1,13 +1,17 @@
 div#error-report-box {
-    min-width: 320px;
+    min-width: 300px;
     min-height: 100px;
     height: fit-content;
     width: 30%;
     z-index: 1000;
     display: flex;
     position: fixed;
-    flex-wrap: wrap;
+    top: 10px;
+    left: 20px;
+    flex-wrap: nowrap;
     flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .error-report {

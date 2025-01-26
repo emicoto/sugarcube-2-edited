@@ -61,6 +61,11 @@ var Stacks = (() => {
 
 	function _listup() {
 		let html = '\n';
+
+		if (!_stacks.length) {
+			return 'stop before start a passage. check more details on backend console.\n';
+		}
+
 		const stacks = clone(_stacks).reverse();
 		html += `stop wikify ${stacks[0].split(' : ')[0]} on :: ${_passages[_passages.length - 1]}\n`;
 

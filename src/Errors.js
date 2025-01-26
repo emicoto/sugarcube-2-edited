@@ -20,7 +20,8 @@ var Errors = (() => {
 	let _footertext = 'Please report the errors to the devs.';
 
 	const reporter = {
-		logs : [],
+		logs     : [],
+		onExport : [],
 
 		copy(selector) {
 			selector.select();
@@ -51,7 +52,16 @@ var Errors = (() => {
 		export() {
 			// export all logs to a file
 			const text = this.copyAll();
-			const blob = new Blob([text], { type: 'text/plain' });
+			const content = [text];
+
+			// add any additional export data
+			if (this.onExport.length > 0) {
+				this.onExport.forEach(fn => {
+					content.push(fn());
+				});
+			}
+
+			const blob = new Blob(content, { type : 'text/plain' });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
@@ -144,6 +154,7 @@ var Errors = (() => {
 		`;
 		document.body.appendChild(elment);
 		$(elment).draggable({ handle : '#error-report-title' });
+		$(elment).resizable({ handles : 'e, s, es', maxHeight : 600, maxWidth : 500 });
 	}
 	
 	function formatErrorObj(obj) {
@@ -247,6 +258,10 @@ var Errors = (() => {
 		drawLog,
 		pop     : popErrorBox,
 		hide    : hideErrorBox,
-		destroy : destroyErrorBox
+		destroy : destroyErrorBox,
+
+		onExport(fn) {
+			reporter.onExport.push(fn);
+		}
 	});
 })();

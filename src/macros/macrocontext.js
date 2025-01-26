@@ -288,7 +288,35 @@ var MacroContext = (() => { // eslint-disable-line no-unused-vars, no-var
 		}
 
 		error(message, source, metadata, logged = true) {
-			return throwError(this._output, `<<${this.displayName}>> - ${message}`, source ? source : this.source, metadata ? metadata : null, logged);
+			return throwError(this._output, `<<${this.displayName}>> ${message}`, source ? source : this.source, metadata ? metadata : null, logged);
+		}
+
+		log(...args) {
+			const text = [];
+			const metadata = [];
+
+			args.forEach(arg => {
+				if (typeof arg === 'string' || typeof arg === 'number') {
+					text.push(arg);
+				}
+				else {
+					metadata.push(arg);
+				}
+			});
+
+			args.reduce((res, arg) => {
+				if (!res.textEnd && (typeof arg === 'string' || typeof arg === 'number')) {
+					res.text.push(arg);
+				}
+				else {
+					res.metadata.push(arg);
+					// eslint-disable-next-line no-param-reassign
+					res.textEnd = true;
+				}
+				return res;
+			}, { text, metadata, textEnd : false });
+
+			return [`'[widget/${this.displayName}] ${text.join(' ')}`, this.source, metadata];
 		}
 	}
 

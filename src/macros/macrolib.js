@@ -8,7 +8,7 @@
 ***********************************************************************************************************************/
 /*
 	global Config, DebugView, Engine, Has, L10n, Macro, NodeTyper, Patterns, Scripting, SimpleAudio, State,
-	Stacks, Story, TempState, Util, Wikifier, postdisplay, prehistory, storage, stringFrom, throwError, getCurPassage
+	Stacks, Story, TempState, Util, Wikifier, postdisplay, prehistory, storage, stringFrom, getCurPassage
 */
 
 (() => {
@@ -296,9 +296,8 @@
 
 			if (!Story.has(subPsg)) {
 				return this.error(
-					this.output,
 					`Unable to execute included passage ${subPsg}, passage "${subPsg}" does not exist`,
-					`<<include ${subPsg}>>`,
+					this.source,
 					{
 						offender : subPsg,
 						origin   : mainPsg
@@ -3664,7 +3663,7 @@
 								return this.error(
 									this.output,
 									`macro cannot execute widget ${widgetName}: ${ex.message}`,
-									`<<${widgetName}>>`,
+									this.source,
 									{
 										stack   : ex.stack,
 										content : widgetCode,

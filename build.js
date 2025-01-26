@@ -36,7 +36,6 @@ const CONFIG = {
 			'src/lib/prngwrapper.js',
 			'src/lib/stylewrapper.js',
 			'src/lib/diff.js',
-			'src/lib/indexDB.js',
 			'src/l10n/l10n.js',
 			'src/l10n/legacy.js',
 			'src/l10n/strings.js',
@@ -107,7 +106,8 @@ const CONFIG = {
 		'src/lib/patterns.js',
 		'src/vendor/eslib.js',
 		'src/vendor/exutil.js',
-		'src/lib/browser.js'
+		'src/lib/browser.js',
+		'src/lib/indexDB.js'
 	],
 	twine1 : {
 		build : {
@@ -246,6 +246,7 @@ if (_opt.options.build) {
 	// Build for Twine 2.x.
 	if (_buildForTwine2 && CONFIG.twine2) {
 		console.log('\nBuilding Twine 2.x version:');
+		_opt.options.noTranspile = true; // Twine 2.x requires ES6.
 
 		// Process the story format templates and write the outfiles.
 		projectBuild({
@@ -305,6 +306,7 @@ function compileJavaScript(filenameObj, options) {
 	// Transpile to ES5 with Babel.
 	if (!_opt.options.noTranspile) {
 		const { transform } = require('@babel/core');
+		console.log('transpiling JavaScript...');
 		bundle = transform(bundle, {
 			// babelHelpers : 'bundled',
 			code     : true,

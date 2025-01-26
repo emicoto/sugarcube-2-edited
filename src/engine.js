@@ -812,7 +812,7 @@ var Engine = (() => { // eslint-disable-line no-unused-vars, no-var
 			}
 			break;
 		case 'function':
-			if (Config.saves.autosave()) {
+			if (Config.saves.autosave(passage)) {
 				Save.autosave.save();
 			}
 			break;
