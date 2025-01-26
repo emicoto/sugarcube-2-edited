@@ -95,14 +95,19 @@ var MacroContext = (() => { // eslint-disable-line no-unused-vars, no-var
 		}
 
 		get shadows() {
-			return [...this._shadows];
+			return Array.from(this._shadows);
 		}
 
 		get shadowView() {
 			const view = new Set();
-			this.contextSelectAll(ctx => ctx._shadows)
-				.forEach(ctx => ctx._shadows.forEach(name => view.add(name)));
-			return [...view];
+
+			for (let context = this; context !== null; context = context.parent) {
+				if (context._shadows) {
+					context._shadows.forEach(name => view.add(name));
+				}
+			}
+
+			return Array.from(view);
 		}
 
 		get debugView() {
@@ -215,7 +220,7 @@ var MacroContext = (() => { // eslint-disable-line no-unused-vars, no-var
 							const varKey = varName.slice(1);
 							const store  = varName[0] === '$' ? State.variables : State.temporary;
 
-							if (store.hasOwnProperty(varKey)) {
+							if (Object.hasOwn(store, varKey)) {
 								valueCache[varKey] = store[varKey];
 							}
 
@@ -246,7 +251,7 @@ var MacroContext = (() => { // eslint-disable-line no-unused-vars, no-var
 							*/
 							shadowStore[varName] = store[varKey];
 
-							if (valueCache.hasOwnProperty(varKey)) {
+							if (Object.hasOwn(valueCache, varKey)) {
 								store[varKey] = valueCache[varKey];
 							}
 							else {
